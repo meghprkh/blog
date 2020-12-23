@@ -1,0 +1,3 @@
+[submodule "themes/mogra"]
+	path = themes/mogra
+	url = https://github.com/meghprkh/mogra-hugo-theme.git
