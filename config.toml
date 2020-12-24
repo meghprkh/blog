@@ -5,6 +5,18 @@ theme = "mogra"
 relativeURLS = true
 canonifyurls = true
 
+[params]
+utterances = """
+<script src="https://utteranc.es/client.js"
+        repo="meghprkh/blog"
+        issue-term="pathname"
+        label="comments"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+"""
+
 [menu]
 
 [[menu.main]]
