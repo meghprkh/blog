@@ -161,6 +161,25 @@ footer {
   font-size: smaller;
 }
 
+/* Table of Contents */
+#TableOfContents::before {
+  content: "Table of Contents";
+  font-weight: bold;
+  text-align: center;
+  display: block;
+}
+
+#TableOfContents {
+  background-color: #f6f8fa;
+  padding: 0.75em;
+  margin: 1em 0;
+}
+
+#TableOfContents > ul {
+  margin-top: 0.25em;
+  margin-bottom: 0;
+}
+
 /* Misc */
 
 .article-details {
