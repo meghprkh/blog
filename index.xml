@@ -11,7 +11,7 @@ we can reuse the community maintained controller mapping database that they have
 The first was packaging PhalconPHP for Fedora while the second was packaging CakePHP.
 Phalcon is an C extension while Cake is a PEAR/Composer extension.
 I will discuss the easier of the two, Cake as it was a PEAR package.
-So first of all, you need to learn some RPM Packaging Basics.</description></item><item><title>About</title><link>http://meghprkh.github.io/blog/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://meghprkh.github.io/blog/about/</guid><description>Hello, I am Megh. I am a web developer who loves using ReactJS and other FRP concepts. In my free time I like to contribute to things that I use - especially GNOME.
-I offer my web development services on freelance basis. You can hire me via Freelancer.com
-I also love solving Math &amp;amp; Physics problems and playing puzzle/strategy games.
-Currently I study Computer Science &amp;amp; Engineering at IIIT, Hyderabad.</description></item></channel></rss>
+So first of all, you need to learn some RPM Packaging Basics.</description></item><item><title>About</title><link>http://meghprkh.github.io/blog/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://meghprkh.github.io/blog/about/</guid><description>Hello, I am Megh. I currently do some C++ and Rust and used to do a lot of Javascript previously.
+I also love gamedev, Math and playing story-rich/puzzle games.
+I studied Computer Science &amp;amp; Engineering at IIIT, Hyderabad.
+You can contact me via my site or my github profile</description></item></channel></rss>
