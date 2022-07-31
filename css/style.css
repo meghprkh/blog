@@ -185,3 +185,16 @@ footer {
 .article-details {
   font-size: smaller;
 }
+
+.code-play-button {
+    position: relative;
+}
+
+.code-play-button a {
+  position: absolute;
+  text-decoration: none;
+  right: 0.5em;
+  font-size: 1.5em;
+  color: white;
+  content: '\25B6';
+}
