@@ -184,13 +184,13 @@ footer {
 @media (min-width: 80em) {
   #TableOfContents {
     display: block;
-    width: calc(100vw - 55em);
+    width: calc(50vw - 29em);
     max-width: 20em;
     position: -webkit-sticky;
     position: sticky;
     height: 0;
     top: 3.5em;
-    margin-left: 52.5em;
+    margin-left: 52em;
     background: none;
   }
 }
