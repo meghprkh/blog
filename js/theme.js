@@ -21,6 +21,8 @@ function navHighlighter() {
   }
   if (navHighlighter.headings[activeIndex].getBoundingClientRect().top > 100)
     activeIndex = activeIndex - 1;
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight)
+    activeIndex = navHighlighter.headings.length - 1;
 
   // Add "active" and store as activeElement
   var element;
