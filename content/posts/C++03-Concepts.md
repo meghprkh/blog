@@ -15,9 +15,13 @@ We will try to implement them in C++03, with one caveat - we must *explicitly sp
 
 **NOTE**: We will use template specialization and do not need to be able to modify the class or our concept for this.
 
+**NOTE**: If it seems like the caveat ignores the entire point of concepts, call these "pseudo-minimal-rust-traits" and read on. By the end of the article, as the Zen of Python mentions, I promise you will agree that explicit is better than implicit :P
+
 ## What are C++ Concepts
 
-C++ Concepts allow us to do compile-time dispatch of methods. Kind of like Rust traits.
+C++ Concepts allow us to do compile-time dispatch of methods.
+
+This compile-time dispatch is thus kind of like Rust traits. (Rust traits provide other features too.)
 
 {{< godbolt options="-std=c++20" >}}
 ```cpp
@@ -41,6 +45,8 @@ struct MyCounter {
     void set_count(int new_count) { count = new_count; }
     static int max_count() { return 100; }
 };
+static_assert(Counter<MyCounter>); // optionally check implementation
+                                   // if we forgot any methods, etc...
 
 // Example usage
 template <typename T>
@@ -50,12 +56,18 @@ void print_counter(T& counter) {
     std::cout << "Counter with count " << counter.get_count() << std::endl;
 }
 
+// compile-time dispatch another method
+void print_counter(int counter) {
+    std::cout << "Integer counter with count " << counter << std::endl;
+}
+
 // Shorthand syntax
 void print_counter_shorthand(Counter auto counter) { print_counter(counter); }
 
 int main() {
     MyCounter c { 25 };
     print_counter(c);
+    print_counter(10); // Prints Integer counter
     print_counter_shorthand(c);
 }
 //}
@@ -116,15 +128,21 @@ print_counter(T& counter) {
     std::cout << "Counter with count " << counter.get_count() << std::endl;
 }
 
+// compile-time dispatch another method
+void print_counter(int counter) {
+    std::cout << "Integer counter with count " << counter << std::endl;
+}
+
 int main() {
-    MyCounter counter { 3 };
+    MyCounter counter { 25 };
     print_counter(counter);
+    print_counter(10); // Prints Integer counter
 }
 //}
 ```
 {{< /godbolt >}}
 
-To do this in C++03, lets sprinkle some macros. We will also *beautify* the C++11 code using macros.
+To do this in C++03, and make it work with C++11 too, lets sprinkle some macros.
 
 {{< godbolt options="-std=c++03" >}}
 ```cpp
@@ -150,7 +168,7 @@ namespace std {
 
 #if __cplusplus != 199711L
 
-#define CONCEPT_CHECK_START \
+#define CONCEPT_CHECK_BEGIN \
     template <typename Self> \
     struct check: std::true_type { \
 
@@ -169,14 +187,15 @@ namespace std {
 // We just define all of the checks inside the constructor of `check`.
 // Then in `IMPL_CONCEPT` we instantiate a static object of the same.
 
-#define CONCEPT_CHECK_START \
+#define CONCEPT_CHECK_BEGIN \
     template <typename Self> \
     struct check: std::true_type { \
         check() { \
 
 #define CONCEPT_CHECK_END } };
 
-#define CONCEPT_ASSERT
+void _concept_assert(bool) {}
+#define CONCEPT_ASSERT _concept_assert
 
 #define IMPL_CONCEPT(CONCEPT, CLS) \
     template<> \
@@ -192,7 +211,7 @@ struct Counter {
     struct is_implemented_by: std::false_type {};
 
     // Define the check
-    CONCEPT_CHECK_START
+    CONCEPT_CHECK_BEGIN
         CONCEPT_ASSERT(static_cast< int (Self::*)() >(&Self::get_count));
         CONCEPT_ASSERT(static_cast< void (Self::*)(int) >(&Self::set_count));
         CONCEPT_ASSERT(static_cast< int (*)() >(&Self::max_count));
@@ -225,14 +244,40 @@ print_counter(T& counter) {
 
 int main() {
     MyCounter counter;
-    counter.count = 3;
+    counter.count = 25;
     Counter::check<MyCounter> x;
     print_counter(counter);
 }
 ```
 {{< /godbolt >}}
 
-We can now use this for defining `print_count` using the same `enable_if` way we used previously. Also most of our macros are simple ones that dont require any parenthesis-escaping except `IMPL_CONCEPT`.
+We can now use this for defining `print_count` using the same `enable_if` way we used previously. Also most of our macros are simple ones that dont require any parenthesis-escaping except `IMPL_CONCEPT`. Note these macros are completely optional in C++11.
+
+<details>
+
+<summary>C++03 details and the macros</summary>
+
+
+`BOOST_STATIC_ASSERT` can not take reference to a function (and `static_assert` is C++11)
+```
+<source>:67:67: error: '&' cannot appear in a constant-expression
+   67 |         BOOST_STATIC_ASSERT(static_cast< int (Self::*)() >(&Self::get_count));
+```
+
+We get around this by defining the `CONCEPT_ASSERT` macro expands an empty function in C++03, and the `CONCEPT_CHECK_BEGIN` defines the constructor of a `check<Self>` struct. This object is then internal-linkage-constructed by `IMPL_CONCEPT`. This ensures that the compiler tries to specialize the constructor with `Self` and detects that the `static_cast`s failed.
+
+Note the `CONCEPT_ASSERT` macro should not be used for "normal"/non-method check asserts as it simply does nothing. Use say `BOOST_STATIC_ASSERT` otherwise.
+
+See example preprocessor output [here](https://godbolt.org/z/vn9eKr6G1)
+
+We can check the compile time error because `get_count` is commented out
+
+- [Gcc 4.9](https://godbolt.org/z/TY5ce3G9b) ([GCC 4.1.2](https://godbolt.org/z/oca3efas4))
+- [Clang 3.4](https://godbolt.org/z/fnndG38cc)
+- [MSVC 19.14 (2017 - new but oldest on godbolt)](https://godbolt.org/z/5xvnErG1v)
+- [ICC 13.0.1 (2012)](https://godbolt.org/z/M1oT6na4v)
+
+</details>
 
 ## Aside: Explicit concepts in C++20
 
@@ -272,7 +317,8 @@ struct MyCounter {
 // ... skipping definition of struct MyCounter ...
 // Declare and check that we have implemented the trait
 template <> struct is_counter<MyCounter> : std::true_type {};
-static_assert(Counter<MyCounter>); // check implementation
+static_assert(Counter<MyCounter>); // optionally check implementation
+                                   // if we forgot any methods, etc...
 //}
 
 // Example usage
@@ -320,6 +366,8 @@ Note that:
 
 Thus, *implicit concepts are almost as bad as not having any check at all*. Except maybe they can produce neater compiler errors (ignoring the case of overloading  based on concepts).
 
+Even if you had a 1000 different classes, writing 1000 more lines saying that a concept is implemented by them is better than implicit behaviour in my opinion. In most cases you will either have 1000 template specializations or some script generated code, and in both cases you only need to add one line.
+
 > What regex is to parsing, implicit concepts are to C++.
 
 And if explicit concepts are better and already implementable in C++03, why provide an abstraction where most developers will write error-prone code instead of providing syntax sugar for explicit concepts?
@@ -339,6 +387,15 @@ And if explicit concepts are better and already implementable in C++03, why prov
   struct require_concepts: std::conjunction< Trait::is_implemented_by<Self>... > {};
 
   USE AS std::enable_if<require_concepts<Cls, Concept1, Concept2>> ...
+  ```
+- Composing concepts - Using other concept checks in a check (slightly leaky abstraction for C++03)
+  ```cpp
+  CONCEPT_CHECK_BEGIN
+    // Require other_concept to be implemented
+    BOOST_STATIC_ASSERT(other_concept::is_implemented_by<Self>::value)
+    // Require either_concept1 or or_concept to be implemented
+    BOOST_STATIC_ASSERT(either_concept1::is_implemented_by<Self>::value || or_concept2::is_implemented_by<Self>::value)
+  CONCEPT_CHECK_END
   ```
 
 ## Summary
