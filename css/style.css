@@ -40,6 +40,16 @@ button[disabled],
   cursor: text;
 }
 
+table, th, td {
+  border: 1px solid;
+  padding: 0.5em;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 code {
   padding: 0.2em 0.4em;
   margin: 0;
