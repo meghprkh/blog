@@ -1,9 +1,10 @@
 ---
 title: Creating an RPM package for a PHP PEAR module
 date: 2014-12-17 12:19:38
-tags: [ Fedora, Packaging ]
+tags: [Fedora, Packaging]
 categories: Opensource
 ---
+
 I am participating in Google Code In 2014 and two of my tasks were based on RPM packaging for Fedora.  
 [The first](http://www.google-melange.com/gci/task/view/google/gci2014/5262603731337216) was packaging [PhalconPHP](http://www.phalconphp.com/en/) for Fedora while [the second](http://www.google-melange.com/gci/task/view/google/gci2014/5774064475963392) was packaging [CakePHP](http://cakephp.org/).  
 Phalcon is an C extension while Cake is a PEAR/Composer extension.
@@ -33,16 +34,15 @@ Install the generated RPM on your system (provided the build is successful).
 
 Now lets head on to creating the actual SPEC file of the RPM package.
 
-*   First install the `php-pear-PEAR-Command-Packaging` package.
-*   Download the PEAR package from the channel (mostly _[http://channelname/get/name-version.tgz](http://channelname/get/name-version.tgz)_)
-*   Run `pear make-rpm-spec Foo.tgz` .
-*   and a spec file will be generated for you (with all required files) …
-*   … but if it is not from the standard PEAR channel, you will need to add the channel to the requires and modify certain lines …
+- First install the `php-pear-PEAR-Command-Packaging` package.
+- Download the PEAR package from the channel (mostly _[http://channelname/get/name-version.tgz](http://channelname/get/name-version.tgz)_)
+- Run `pear make-rpm-spec Foo.tgz` .
+- and a spec file will be generated for you (with all required files) …
+- … but if it is not from the standard PEAR channel, you will need to add the channel to the requires and modify certain lines …
 
-
-*   You may look at [my spec for CakePHP](https://gist.github.com/meghprkh/39fa65e683f36a4b3996)
-*   Done now You just need to build it …
-*   If the build fails make sure you had installed the Channel Package
+- You may look at [my spec for CakePHP](https://gist.github.com/meghprkh/39fa65e683f36a4b3996)
+- Done now You just need to build it …
+- If the build fails make sure you had installed the Channel Package
 
 ```
 %global pear_name example
@@ -57,12 +57,12 @@ Requires:       php-channel(%{pear_channel})
 
 Lets say you have Fedora 20 on your system but you also want to build it for other Fedora and EPEL versions and also make the installation simpler for the end user. So the right tool you need to use is the [Copr](http://copr.fedoraproject.org/) Build System.
 
-*   Upload your SRPMs to some file sharing service which permits direct downloads through a link (I used GitHub but thats a bad habit for git is extremely slow with binary files (SRPMS are gzipped files)).
-*   Go to the Copr build system page.
-*   Read their wiki a little.
-*   Login and create a new repo
-*   First build the Channel package in your repo
-*   Drink some coffee. Its gonna take some time.
-*   Next build the PEAR package (build it after the first completes for it is dependent onthe channel package)
-*   Share your work.
-*   You may see my repo for [copy and paste installation instructions](https://copr.fedoraproject.org/coprs/meghprkh/cakephp/)
+- Upload your SRPMs to some file sharing service which permits direct downloads through a link (I used GitHub but thats a bad habit for git is extremely slow with binary files (SRPMS are gzipped files)).
+- Go to the Copr build system page.
+- Read their wiki a little.
+- Login and create a new repo
+- First build the Channel package in your repo
+- Drink some coffee. Its gonna take some time.
+- Next build the PEAR package (build it after the first completes for it is dependent onthe channel package)
+- Share your work.
+- You may see my repo for [copy and paste installation instructions](https://copr.fedoraproject.org/coprs/meghprkh/cakephp/)

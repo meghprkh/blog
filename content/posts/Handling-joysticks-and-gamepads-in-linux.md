@@ -1,9 +1,10 @@
 ---
 title: Handling joysticks and gamepads in linux
 date: 2016-06-03 22:28:52
-tags: [ GNOME, GSoC, Linux, Joystick, Gamepad ]
+tags: [GNOME, GSoC, Linux, Joystick, Gamepad]
 categories: Opensource
 ---
+
 In this post I would share some of the things I came across when dealing with
 the handling of joysticks and gamepads in Linux. One of the goals I wanted to
 achieve was to make our controller mappings compatible with the SDL ones so that
@@ -13,9 +14,9 @@ we can reuse the community maintained controller mapping database that they have
 
 The full code can be found [here](https://gist.github.com/meghprkh/9cdce0cd4e0f41ce93413b250a207a55).
 
-The first thing that I want to clarify is that Linux provides *two* APIs for
-dealing with joysticks. One is the legacy *joystick* API and the other is the
-modern *evdev* API. The evdev-based API provides more detailed information about
+The first thing that I want to clarify is that Linux provides _two_ APIs for
+dealing with joysticks. One is the legacy _joystick_ API and the other is the
+modern _evdev_ API. The evdev-based API provides more detailed information about
 the buttons and axes available and SDL2 only supports the evdev API so we
 decided to go with the evdev API.
 
@@ -26,21 +27,23 @@ Quoting Arch Wiki:
 > and keyboards). Symbolic links to those devices are also available in
 > `/dev/input/by-id/` and `/dev/input/by-path/` where the legacy 'Joystick' API
 > has names ending with -joystick while the 'evdev' have names ending with
-> `-event-joystick`.   
+> `-event-joystick`.
 
 For using the evdev API, I decided to use the libevdev library instead of using traditional `ioctl` calls as this library provided simpler higher-level access to the evdev API.
 
 Moving on to our main goal: we want to reuse the SDL mappings. The SDL mappings look something like these:
+
 ```
 "guid,name,mappings"
 "030000006d0400001dc2000014400000,Logitech F310 Gamepad (XInput),a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,"
 ```
 
 Quoting SDL documentation:
+
 > The mapping format for joystick is:
->     bX - a joystick button, index X
->     hX.Y - hat X with value Y
->     aX - axis X of the joystick
+> bX - a joystick button, index X
+> hX.Y - hat X with value Y
+> aX - axis X of the joystick
 > Buttons can be used as a controller axis and vice versa.
 
 In this post we will assume that we will handle the parsing of this mapping and only need to get the indexes correctly (like `b0`, `a2`, etc.)
@@ -89,6 +92,7 @@ void guid_to_string(guint16 * guid, char * guidstr) {
 Now coming to the feature detection part. We use the helper `libevdev_has_event_code (dev, type, code)` to detect if the device has a button/axis/hat. This way we loop over the possible values of the code for each type (`EV_KEY` for button, `EV_ABS` for axes and hat) and map it to an increasing number. That is the first valid axis code we found is `axis0` or `a0`, the second valid axis is `a1` and so on. It is the same for buttons.
 
 For example, following is part of the code for buttons:
+
 ```c
 int nbuttons = 0;
 guint8 key_map[KEY_MAX];
@@ -103,6 +107,7 @@ for (i = BTN_JOYSTICK; i < KEY_MAX; ++i) {
 ```
 
 And while polling we find the button number through this `key_map`:
+
 ```c
 printf("Button %d\n", key_map[ev.code - BTN_MISC]);
 ```

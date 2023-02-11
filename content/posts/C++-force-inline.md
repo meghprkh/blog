@@ -1,48 +1,48 @@
 ---
 title: "Force Inline in C++"
 date: 2022-09-04T00:28:10+01:00
-tags: [ C++ ]
+tags: [C++]
 categories: C++
 crossposts:
-    reddit: https://www.reddit.com/r/cpp/comments/x5b6qk/force_inline_in_c/
+  reddit: https://www.reddit.com/r/cpp/comments/x5b6qk/force_inline_in_c/
 code: |
-    #if defined(__clang__)
-    #define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
-    #elif defined(__GNUC__)
-    #define FORCE_INLINE [[gnu::always_inline]] inline
-    #elif defined(_MSC_VER)
-    #pragma warning(error: 4714)
-    #define FORCE_INLINE __forceinline
-    #else
-    #error Unsupported compiler
-    #endif
+  #if defined(__clang__)
+  #define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
+  #elif defined(__GNUC__)
+  #define FORCE_INLINE [[gnu::always_inline]] inline
+  #elif defined(_MSC_VER)
+  #pragma warning(error: 4714)
+  #define FORCE_INLINE __forceinline
+  #else
+  #error Unsupported compiler
+  #endif
 
-    FORCE_INLINE int decrement(int x) { return x - 1; }
-    int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
+  FORCE_INLINE int decrement(int x) { return x - 1; }
+  int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
 
-    int main(int argc, char ** argv) {
-        // Executed with args "a b c d e", should return 120 normally
-        return factorial(decrement(argc));
-    }
+  int main(int argc, char ** argv) {
+      // Executed with args "a b c d e", should return 120 normally
+      return factorial(decrement(argc));
+  }
 code_error: |
-    #if defined(__clang__)
-    #define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
-    #elif defined(__GNUC__)
-    #define FORCE_INLINE [[gnu::always_inline]] inline
-    #elif defined(_MSC_VER)
-    #pragma warning(error: 4714)
-    #define FORCE_INLINE __forceinline
-    #else
-    #error Unsupported compiler
-    #endif
+  #if defined(__clang__)
+  #define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
+  #elif defined(__GNUC__)
+  #define FORCE_INLINE [[gnu::always_inline]] inline
+  #elif defined(_MSC_VER)
+  #pragma warning(error: 4714)
+  #define FORCE_INLINE __forceinline
+  #else
+  #error Unsupported compiler
+  #endif
 
-    FORCE_INLINE int decrement(int x) { return x - 1; }
-    FORCE_INLINE int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
+  FORCE_INLINE int decrement(int x) { return x - 1; }
+  FORCE_INLINE int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
 
-    int main(int argc, char ** argv) {
-        // Executed with args "a b c d e", should return 120 normally
-        return factorial(decrement(argc));
-    }
+  int main(int argc, char ** argv) {
+      // Executed with args "a b c d e", should return 120 normally
+      return factorial(decrement(argc));
+  }
 ---
 
 Function calls are expensive. They require allocating a new stack frame, pushing params calling, return values. And lets not get started on calling conventions. `inline`, `always_inline` and `forceinline` are just hints. They dont always inline [^1] [^2].
@@ -51,7 +51,7 @@ Trust the compiler some say. Profile your code say the others. Use macros say th
 
 But what if you are developing a library and need to ensure that your method gets inlined? You cant say trust the compiler, because the users want to trust your library. You cant profile the code, because the application isn't your code.
 
-We want a `FORCE_INLINE` keyword that *just works*, at least on the three major compilers - `g++`, `clang` and `msvc`. If it cant inline, it should error in a meaningful way.
+We want a `FORCE_INLINE` keyword that _just works_, at least on the three major compilers - `g++`, `clang` and `msvc`. If it cant inline, it should error in a meaningful way.
 
 The example:
 
@@ -82,24 +82,24 @@ It should either compile-time error or link-time error if put it in front of `fa
 
 Now lets check it in action:
 
-| Compiler | Working case    | Error case    | Error type |
-|:-------- |:--------------- |:------------- |:---------- |
-| Clang    | [clang_working] | [clang_error] | Linker error |
-| GCC      | [gcc_working]   | [gcc_error]   | Compile error |
+| Compiler | Working case    | Error case    | Error type                                 |
+| :------- | :-------------- | :------------ | :----------------------------------------- |
+| Clang    | [clang_working] | [clang_error] | Linker error                               |
+| GCC      | [gcc_working]   | [gcc_error]   | Compile error                              |
 | MSVC     | [msvc_working]  | [msvc_error]  | Compile error (requires optimization flag) |
 
 How it works:
 
 - GCC would generate an error if it cant `always_inline` [^3]
 - Clang:
-    - Does not generate an error for non-inlinable `always_inline` functions. [^1]
-    - Instead `gnu_inline` and `extern inline` forces it to not generate any code for the function [^4] [^5]
-    - Thus give a linker error if it is not inlined
+  - Does not generate an error for non-inlinable `always_inline` functions. [^1]
+  - Instead `gnu_inline` and `extern inline` forces it to not generate any code for the function [^4] [^5]
+  - Thus give a linker error if it is not inlined
 - MSVC:
-    - Generates a warning for for non-inlinable `__forceinline` functions
-    - But only if compiled with any "inline expansion" optimization (`/Ob<n>`) [^2]
-    - This is present with `/O1` or `/O2`
-    - We promote this warning to an error
+  - Generates a warning for for non-inlinable `__forceinline` functions
+  - But only if compiled with any "inline expansion" optimization (`/Ob<n>`) [^2]
+  - This is present with `/O1` or `/O2`
+  - We promote this warning to an error
 
 **Note**: do not use this with virtual functions. You can't "force inline" them as they need to be pointed to at runtime.
 

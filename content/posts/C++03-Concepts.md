@@ -1,17 +1,17 @@
 ---
 title: "C++20 Concepts in C++03"
 date: 2022-08-04T01:23:11+01:00
-tags: [ C++, Rust, series-btrait-intro ]
+tags: [C++, Rust, series-btrait-intro]
 crossposts:
-    hackernews: https://news.ycombinator.com/item?id=32356522
-    reddit: https://www.reddit.com/r/cpp/comments/wgxjzy/c20_concepts_in_c03/
+  hackernews: https://news.ycombinator.com/item?id=32356522
+  reddit: https://www.reddit.com/r/cpp/comments/wgxjzy/c20_concepts_in_c03/
 categories: C++
 enableTOC: true
 ---
 
 C++20 Concepts are a new language feature that ease generic programming, but are primarily syntactic sugar.
 
-We will try to implement them in C++03, with one caveat - we must *explicitly specify that a class implements an concept*.
+We will try to implement them in C++03, with one caveat - we must _explicitly specify that a class implements an concept_.
 
 **NOTE**: We will use template specialization and do not need to be able to modify the class or our concept for this.
 
@@ -24,6 +24,7 @@ C++ Concepts allow us to do compile-time dispatch of methods.
 This compile-time dispatch is thus kind of like Rust traits. (Rust traits provide other features too.)
 
 {{< godbolt options="-std=c++20" >}}
+
 ```cpp
 #include <iostream>
 #include <concepts>
@@ -72,6 +73,7 @@ int main() {
 }
 //}
 ```
+
 {{< /godbolt >}}
 
 Notice that we never needed to specify that `MyCounter` implements `Counter`. This can easily be fixed by requiring some constant to be defined in `MyCounter` or otherwise.
@@ -85,6 +87,7 @@ We will use C++11 initially. Then will also modify this using some macros for C+
 We use a templated struct and observe that `static_asserts` inside it are executed when the template is specialized.
 
 {{< godbolt options="-std=c++11" >}}
+
 ```cpp
 #include <iostream>
 #include <type_traits>
@@ -140,11 +143,13 @@ int main() {
 }
 //}
 ```
+
 {{< /godbolt >}}
 
 To do this in C++03, and make it work with C++11 too, lets sprinkle some macros.
 
 {{< godbolt options="-std=c++03" >}}
+
 ```cpp
 #include <iostream>
 
@@ -249,6 +254,7 @@ int main() {
     print_counter(counter);
 }
 ```
+
 {{< /godbolt >}}
 
 We can now use this for defining `print_count` using the same `enable_if` way we used previously. Also most of our macros are simple ones that dont require any parenthesis-escaping except `IMPL_CONCEPT`. Note these macros are completely optional in C++11.
@@ -257,8 +263,8 @@ We can now use this for defining `print_count` using the same `enable_if` way we
 
 <summary>C++03 details and the macros</summary>
 
-
 `BOOST_STATIC_ASSERT` can not take reference to a function (and `static_assert` is C++11)
+
 ```
 <source>:67:67: error: '&' cannot appear in a constant-expression
    67 |         BOOST_STATIC_ASSERT(static_cast< int (Self::*)() >(&Self::get_count));
@@ -284,6 +290,7 @@ We can check the compile time error because `get_count` is commented out
 Explicit concepts can be implemented in pretty much the same way in C++20, using a templated `is_counter` conditional struct
 
 {{< godbolt options="-std=c++20" >}}
+
 ```cpp
 #include <iostream>
 #include <concepts>
@@ -335,6 +342,7 @@ int main() {
 }
 //}
 ```
+
 {{< /godbolt >}}
 
 ## Rant on C++20 Concepts
@@ -360,11 +368,12 @@ Now consider the following modification to the codebase:
 > What happens when we call `print_count(counter_ptr)` with `counter_ptr = my_shared_ptr<youtube_api::VideoViewCounter>()`?
 
 Note that:
+
 1. In the case of "implicit concepts", we would see the reference count being printed, without any compile or run-time error.
 2. In the case of "explicit concepts", we would get a compile time error since no method matches this.
 3. In the case of an unchecked template too, we would see the reference count being printed too.
 
-Thus, *implicit concepts are almost as bad as not having any check at all*. Except maybe they can produce neater compiler errors (ignoring the case of overloading  based on concepts).
+Thus, _implicit concepts are almost as bad as not having any check at all_. Except maybe they can produce neater compiler errors (ignoring the case of overloading based on concepts).
 
 Even if you had a 1000 different classes, writing 1000 more lines saying that a concept is implemented by them is better than implicit behaviour in my opinion. In most cases you will either have 1000 template specializations or some script generated code, and in both cases you only need to add one line.
 
@@ -375,19 +384,23 @@ And if explicit concepts are better and already implementable in C++03, why prov
 ## Extra syntactic sugar stuff
 
 - Using C++20 Concepts with C++03 concepts
+
   ```cpp
   template <typename Self>
   concept Counter_ = Counter::is_implemented_by<Self>::value;
 
   void print_counter(Counter_ auto counter) { ... }
   ```
+
 - Requiring multiple C++03 Concepts to be satisfied
+
   ```cpp
   template <typename Self, typename... Trait>
   struct require_concepts: std::conjunction< Trait::is_implemented_by<Self>... > {};
 
   USE AS std::enable_if<require_concepts<Cls, Concept1, Concept2>> ...
   ```
+
 - Composing concepts - Using other concept checks in a check (slightly leaky abstraction for C++03)
   ```cpp
   CONCEPT_CHECK_BEGIN

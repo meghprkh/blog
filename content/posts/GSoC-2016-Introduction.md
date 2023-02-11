@@ -1,9 +1,10 @@
 ---
-title: 'GSoC 2016: Introduction'
+title: "GSoC 2016: Introduction"
 date: 2016-05-23 17:49:03
-tags: [ GNOME, GSoC ]
+tags: [GNOME, GSoC]
 categories: Opensource
 ---
+
 Hello everyone, I am participating in Google Summer Of Code 2016 under the GNOME project.
 
 My project is related to an application called [GNOME Games](https://wiki.gnome.org/Apps/Games/). As you can see this app serves as an catalog of games alongside an emulator. My proposal is related to adding support for gamepads/joysticks/controllers to this app. By this I mean the ability to play emulated games using the gamepad.
