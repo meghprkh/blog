@@ -1,0 +1,16 @@
+title: Megh's Blog
+url: https://meghprkh.github.io/
+language: en
+description: Ramblings and dumb ideas
+author:
+  name: Megh Parikh
+  url: https://meghprkh.github.io/
+utterances: |
+  <script src="https://utteranc.es/client.js"
+          repo="meghprkh/blog"
+          issue-term="pathname"
+          label="comments"
+          theme="github-light"
+          crossorigin="anonymous"
+          async>
+  </script>
