@@ -8,7 +8,8 @@
 		"start": "npx @11ty/eleventy --serve --quiet",
 		"debug": "DEBUG=Eleventy* npx @11ty/eleventy",
 		"debugstart": "DEBUG=Eleventy* npx @11ty/eleventy --serve --quiet",
-		"benchmark": "DEBUG=Eleventy:Benchmark* npx @11ty/eleventy"
+		"benchmark": "DEBUG=Eleventy:Benchmark* npx @11ty/eleventy",
+		"prepare": "husky install"
 	},
 	"repository": {
 		"type": "git",
@@ -31,6 +32,9 @@
 		"url": "https://github.com/11ty/eleventy-base-blog/issues"
 	},
 	"homepage": "https://github.com/11ty/eleventy-base-blog#readme",
+	"lint-staged": {
+		"**/*": "prettier --write --ignore-unknown"
+	},
 	"devDependencies": {
 		"@11ty/eleventy": "^2.0.0",
 		"@11ty/eleventy-img": "^3.0.0",
@@ -39,9 +43,12 @@
 		"@11ty/eleventy-plugin-rss": "^1.2.0",
 		"@11ty/eleventy-plugin-syntaxhighlight": "^4.2.0",
 		"eleventy-plugin-toc": "^1.1.5",
+		"husky": "^8.0.3",
 		"js-yaml": "^4.1.0",
+		"lint-staged": "^13.1.1",
 		"luxon": "^3.2.1",
 		"markdown-it-anchor": "^8.6.6",
-		"markdown-it-footnote": "^3.0.3"
+		"markdown-it-footnote": "^3.0.3",
+		"prettier": "2.8.4"
 	}
 }
