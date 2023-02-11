@@ -10,6 +10,8 @@ const pluginNavigation = require("@11ty/eleventy-navigation");
 const pluginTOC = require("eleventy-plugin-toc");
 const { EleventyHtmlBasePlugin } = require("@11ty/eleventy");
 
+const registerShortcodes = require("./shortcodes");
+
 module.exports = function (eleventyConfig) {
 	eleventyConfig.addDataExtension("yaml", (contents) => yaml.load(contents));
 
@@ -84,6 +86,8 @@ module.exports = function (eleventyConfig) {
 			(tag) => ["all", "nav", "post", "posts"].indexOf(tag) === -1
 		);
 	});
+
+	registerShortcodes(eleventyConfig);
 
 	// Customize Markdown library settings:
 	eleventyConfig.amendLibrary("md", (mdLib) => {
