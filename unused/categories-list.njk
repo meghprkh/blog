@@ -1,0 +1,12 @@
+---
+permalink: /categories/
+layout: layouts/home.njk
+---
+<h1>Categories</h1>
+
+<ul>
+{% for category in collections.categories %}
+	{% set categoryUrl %}/categories/{{ category | slugify }}/{% endset %}
+	<li><a href="{{ categoryUrl }}" class="post-tag">{{ category }}</a></li>
+{% endfor %}
+</ul>
