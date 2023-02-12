@@ -1,49 +1,61 @@
 ---
-title: "Force Inline in C++"
+title: Force Inline in C++
 date: 2022-09-04T00:28:10+01:00
 tags: [C++]
 categories: C++
 crossposts:
   reddit: https://www.reddit.com/r/cpp/comments/x5b6qk/force_inline_in_c/
-code: |
-  #if defined(__clang__)
-  #define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
-  #elif defined(__GNUC__)
-  #define FORCE_INLINE [[gnu::always_inline]] inline
-  #elif defined(_MSC_VER)
-  #pragma warning(error: 4714)
-  #define FORCE_INLINE __forceinline
-  #else
-  #error Unsupported compiler
-  #endif
-
-  FORCE_INLINE int decrement(int x) { return x - 1; }
-  int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
-
-  int main(int argc, char ** argv) {
-      // Executed with args "a b c d e", should return 120 normally
-      return factorial(decrement(argc));
-  }
-code_error: |
-  #if defined(__clang__)
-  #define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
-  #elif defined(__GNUC__)
-  #define FORCE_INLINE [[gnu::always_inline]] inline
-  #elif defined(_MSC_VER)
-  #pragma warning(error: 4714)
-  #define FORCE_INLINE __forceinline
-  #else
-  #error Unsupported compiler
-  #endif
-
-  FORCE_INLINE int decrement(int x) { return x - 1; }
-  FORCE_INLINE int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
-
-  int main(int argc, char ** argv) {
-      // Executed with args "a b c d e", should return 120 normally
-      return factorial(decrement(argc));
-  }
 ---
+
+{% setPageVar "code" %}
+
+```cpp
+#if defined(__clang__)
+#define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
+#elif defined(__GNUC__)
+#define FORCE_INLINE [[gnu::always_inline]] inline
+#elif defined(_MSC_VER)
+#pragma warning(error: 4714)
+#define FORCE_INLINE __forceinline
+#else
+#error Unsupported compiler
+#endif
+
+FORCE_INLINE int decrement(int x) { return x - 1; }
+int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
+
+int main(int argc, char ** argv) {
+    // Executed with args "a b c d e", should return 120 normally
+    return factorial(decrement(argc));
+}
+```
+
+{% endsetPageVar %}
+
+{% setPageVar "code_error" %}
+
+```cpp
+#if defined(__clang__)
+#define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
+#elif defined(__GNUC__)
+#define FORCE_INLINE [[gnu::always_inline]] inline
+#elif defined(_MSC_VER)
+#pragma warning(error: 4714)
+#define FORCE_INLINE __forceinline
+#else
+#error Unsupported compiler
+#endif
+
+FORCE_INLINE int decrement(int x) { return x - 1; }
+int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
+
+int main(int argc, char ** argv) {
+    // Executed with args "a b c d e", should return 120 normally
+    return factorial(decrement(argc));
+}
+```
+
+{% endsetPageVar %}
 
 Function calls are expensive. They require allocating a new stack frame, pushing params calling, return values. And lets not get started on calling conventions. `inline`, `always_inline` and `forceinline` are just hints. They dont always inline [^1] [^2].
 
@@ -113,9 +125,9 @@ Thus we can and should build syntactic sugar as functions instead of weird macro
 [^4]: https://clang.llvm.org/docs/AttributeReference.html#gnu-inline
 [^5]: https://gcc.gnu.org/onlinedocs/gcc/Inline.html
 
-[clang_working]: {{< godbolt compiler_type="clang" language="c++" arguments="a b c d e" code_from_param="code" url_only="true" />}}
-[clang_error]: {{< godbolt compiler_type="clang" language="c++" arguments="a b c d e" code_from_param="code_error" url_only="true" />}}
-[gcc_working]: {{< godbolt compiler_type="gcc" language="c++" arguments="a b c d e" code_from_param="code" url_only="true" />}}
-[gcc_error]: {{< godbolt compiler_type="gcc" language="c++" arguments="a b c d e" code_from_param="code_error" url_only="true" />}}
-[msvc_working]: {{< godbolt compiler_type="msvc" language="c++" options="/Ob1" arguments="a b c d e" code_from_param="code" url_only="true" />}}
-[msvc_error]: {{< godbolt compiler_type="msvc" language="c++" options="/Ob1" arguments="a b c d e" code_from_param="code_error" url_only="true" />}}
+[clang_working]: {% godbolt_inline compiler_type="clang", language="c++", execution_args="a b c d e", code=page.code, url_only=true %}
+[clang_error]: {% godbolt_inline compiler_type="clang", language="c++", execution_args="a b c d e", code=page.code_error, url_only=true %}
+[gcc_working]: {% godbolt_inline compiler_type="gcc", language="c++", execution_args="a b c d e", code=page.code, url_only=true %}
+[gcc_error]: {% godbolt_inline compiler_type="gcc", language="c++", execution_args="a b c d e", code=page.code_error, url_only=true %}
+[msvc_working]: {% godbolt_inline compiler_type="msvc", language="c++", compiler_args="/Ob1", execution_args="a b c d e", code=page.code, url_only=true %}
+[msvc_error]: {% godbolt_inline compiler_type="msvc", language="c++", compiler_args="/Ob1", execution_args="a b c d e", code=page.code_error, url_only=true %}

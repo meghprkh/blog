@@ -23,13 +23,13 @@ C++ Concepts allow us to do compile-time dispatch of methods.
 
 This compile-time dispatch is thus kind of like Rust traits. (Rust traits provide other features too.)
 
-{{< godbolt options="-std=c++20" >}}
+{% godbolt fragment="tut", compiler_args="-std=c++20" %}
 
 ```cpp
 #include <iostream>
 #include <concepts>
 
-//{
+// fragment tut
 // Define the concept check
 template <typename Self>
 concept Counter = requires(Self counter, int new_count) {
@@ -71,10 +71,10 @@ int main() {
     print_counter(10); // Prints Integer counter
     print_counter_shorthand(c);
 }
-//}
+// endfragment tut
 ```
 
-{{< /godbolt >}}
+{% endgodbolt %}
 
 Notice that we never needed to specify that `MyCounter` implements `Counter`. This can easily be fixed by requiring some constant to be defined in `MyCounter` or otherwise.
 
@@ -86,13 +86,13 @@ We will use C++11 initially. Then will also modify this using some macros for C+
 
 We use a templated struct and observe that `static_asserts` inside it are executed when the template is specialized.
 
-{{< godbolt options="-std=c++11" >}}
+{% godbolt fragment="tut", compiler_args="-std=c++11" %}
 
 ```cpp
 #include <iostream>
 #include <type_traits>
 
-//{
+// fragment tut
 // Define the concept
 struct Counter {
     // This template is specialized to true_type by any class that
@@ -141,14 +141,14 @@ int main() {
     print_counter(counter);
     print_counter(10); // Prints Integer counter
 }
-//}
+// endfragment tut
 ```
 
-{{< /godbolt >}}
+{% endgodbolt %}
 
 To do this in C++03, and make it work with C++11 too, lets sprinkle some macros.
 
-{{< godbolt options="-std=c++03" >}}
+{% godbolt fragment="tut", compiler_args="-std=c++03" %}
 
 ```cpp
 #include <iostream>
@@ -209,7 +209,7 @@ void _concept_assert(bool) {}
 
 #endif
 
-//{
+// fragment tut
 // Define the concept
 struct Counter {
     template <typename T>
@@ -223,7 +223,7 @@ struct Counter {
     CONCEPT_CHECK_END
 };
 
-//}
+// endfragment tut
 // Define our struct
 struct MyCounter {
     int count;
@@ -232,11 +232,11 @@ struct MyCounter {
     void set_count(int new_count) { count = new_count; }
     static int max_count() { return 100; }
 };
-//{
+// fragment tut
 // ... skipping definition of struct MyCounter ...
 // Declare and check that we have implemented the trait
 IMPL_CONCEPT(Counter, MyCounter);
-//}
+// endfragment tut
 
 // Example usage using classic enable_if SFINAE
 template <typename T>
@@ -255,7 +255,7 @@ int main() {
 }
 ```
 
-{{< /godbolt >}}
+{% endgodbolt %}
 
 We can now use this for defining `print_count` using the same `enable_if` way we used previously. Also most of our macros are simple ones that dont require any parenthesis-escaping except `IMPL_CONCEPT`. Note these macros are completely optional in C++11.
 
@@ -289,14 +289,14 @@ We can check the compile time error because `get_count` is commented out
 
 Explicit concepts can be implemented in pretty much the same way in C++20, using a templated `is_counter` conditional struct
 
-{{< godbolt options="-std=c++20" >}}
+{% godbolt fragment="tut", compiler_args="-std=c++20" %}
 
 ```cpp
 #include <iostream>
 #include <concepts>
 #include <type_traits>
 
-//{
+// fragment tut
 // Explicit check
 template <typename Self>
 struct is_counter: std::false_type {};
@@ -311,7 +311,7 @@ concept Counter =
         { Self::max_count() } -> std::same_as<int>;
     };
 
-//}
+// endfragment tut
 // Our struct
 struct MyCounter {
     int count;
@@ -320,13 +320,13 @@ struct MyCounter {
     void set_count(int new_count) { count = new_count; }
     static int max_count() { return 100; }
 };
-//{
+// fragment tut
 // ... skipping definition of struct MyCounter ...
 // Declare and check that we have implemented the trait
 template <> struct is_counter<MyCounter> : std::true_type {};
 static_assert(Counter<MyCounter>); // optionally check implementation
                                    // if we forgot any methods, etc...
-//}
+// endfragment tut
 
 // Example usage
 template <typename T>
@@ -340,10 +340,10 @@ int main() {
     MyCounter c { 25 };
     print_counter(c);
 }
-//}
+// endfragment tut
 ```
 
-{{< /godbolt >}}
+{% endgodbolt %}
 
 ## Rant on C++20 Concepts
 

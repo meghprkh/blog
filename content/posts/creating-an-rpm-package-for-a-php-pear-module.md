@@ -5,8 +5,8 @@ tags: [Fedora, Packaging]
 categories: Opensource
 ---
 
-I am participating in Google Code In 2014 and two of my tasks were based on RPM packaging for Fedora.  
-[The first](http://www.google-melange.com/gci/task/view/google/gci2014/5262603731337216) was packaging [PhalconPHP](http://www.phalconphp.com/en/) for Fedora while [the second](http://www.google-melange.com/gci/task/view/google/gci2014/5774064475963392) was packaging [CakePHP](http://cakephp.org/).  
+I am participating in Google Code In 2014 and two of my tasks were based on RPM packaging for Fedora.
+[The first](http://www.google-melange.com/gci/task/view/google/gci2014/5262603731337216) was packaging [PhalconPHP](http://www.phalconphp.com/en/) for Fedora while [the second](http://www.google-melange.com/gci/task/view/google/gci2014/5774064475963392) was packaging [CakePHP](http://cakephp.org/).
 Phalcon is an C extension while Cake is a PEAR/Composer extension.
 
 <!-- more -->
@@ -22,7 +22,8 @@ Then I recommend that you read [PHP Packaging wiki]([http://fedoraproject.org/wi
 So lets say we have identified the PEAR channel (pear.example.org) and it is not the standard PEAR channel. So we need to create a CHANNEL package.
 
 So lets create the SPEC file :
-{% gist meghprkh/066d9477881f168c77b4 %}
+
+<script src="https://gist.github.com/meghprkh/066d9477881f168c77b4.js"></script>
 
 As you can see you just need to edit a few lines (lines 2,3) to update the channel name and URL and the last lines for proper changelogs.
 

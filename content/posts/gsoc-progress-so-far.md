@@ -27,5 +27,5 @@ I will keep posting updates on this blog. Stay tuned!
 
 ## Related posts
 
-- {% post_link GSoC-2016-Introduction %}
-- {% post_link Handling-joysticks-and-gamepads-in-linux %}
+- {{ "gsoc-2016-introduction" | url }}
+- {{ "handling-joysticks-and-gamepads-in-linux" | url }}
