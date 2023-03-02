@@ -2,137 +2,137 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 	
 	<url>
-		<loc>https://meghprkh.github.io/posts/creating-an-rpm-package-for-a-php-pear-module/</loc>
+		<loc>https://meghprkh.github.io/blog/posts/creating-an-rpm-package-for-a-php-pear-module/</loc>
 		<lastmod>2014-12-17</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/posts/gsoc-2016-introduction/</loc>
+		<loc>https://meghprkh.github.io/blog/posts/gsoc-2016-introduction/</loc>
 		<lastmod>2016-05-23</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/posts/handling-joysticks-and-gamepads-in-linux/</loc>
+		<loc>https://meghprkh.github.io/blog/posts/handling-joysticks-and-gamepads-in-linux/</loc>
 		<lastmod>2016-06-03</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/posts/gsoc-progress-so-far/</loc>
+		<loc>https://meghprkh.github.io/blog/posts/gsoc-progress-so-far/</loc>
 		<lastmod>2016-06-26</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/posts/adventures-with-the-meson-build-system-and-a-gtk-playground/</loc>
+		<loc>https://meghprkh.github.io/blog/posts/adventures-with-the-meson-build-system-and-a-gtk-playground/</loc>
 		<lastmod>2016-07-11</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/posts/the-state-of-gamepad-support-in-games/</loc>
+		<loc>https://meghprkh.github.io/blog/posts/the-state-of-gamepad-support-in-games/</loc>
 		<lastmod>2016-07-22</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/posts/gsoc-summary/</loc>
+		<loc>https://meghprkh.github.io/blog/posts/gsoc-summary/</loc>
 		<lastmod>2016-08-22</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/posts/c++03-concepts/</loc>
+		<loc>https://meghprkh.github.io/blog/posts/c++03-concepts/</loc>
 		<lastmod>2022-08-04</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/posts/c++-force-inline/</loc>
+		<loc>https://meghprkh.github.io/blog/posts/c++-force-inline/</loc>
 		<lastmod>2022-09-03</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/about/</loc>
+		<loc>https://meghprkh.github.io/blog/about/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/archive/</loc>
+		<loc>https://meghprkh.github.io/blog/archive/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/</loc>
+		<loc>https://meghprkh.github.io/blog/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/gnome/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/gnome/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/meson-build/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/meson-build/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/fedora/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/c/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/packaging/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/rust/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/c/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/series-btrait-intro/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/rust/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/fedora/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/series-btrait-intro/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/packaging/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/gsoc/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/gsoc/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/gamepad/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/gamepad/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/library/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/library/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/games/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/games/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/gnome-games/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/gnome-games/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/linux/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/linux/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://meghprkh.github.io/tags/joystick/</loc>
+		<loc>https://meghprkh.github.io/blog/tags/joystick/</loc>
 		<lastmod>2023-03-02</lastmod>
 	</url>
 </urlset>
