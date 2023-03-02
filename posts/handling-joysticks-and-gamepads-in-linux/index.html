@@ -1,63 +1,634 @@
-<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><title>Handling joysticks and gamepads in linux</title><link rel=stylesheet href=../../css/style.css></head><body><header class=site-header><h1>Megh's Blog</h1><nav><ul><li><a href=../../>Home</a></li><li><a href=../../categories>Categories</a></li><li><a href=../../tags>Tags</a></li><li><a href=../../about>About</a></li><li><a href=../../index.xml>Feed</a></li></ul></nav></header><main><article class=post><h1 class=title>Handling joysticks and gamepads in linux</h1><div class=article-details><time>Fri Jun 3 2016</time>
-in
-<a href=../../categories/opensource>Opensource</a></div><div><p>In this post I would share some of the things I came across when dealing with
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Handling joysticks and gamepads in linux</title>
+		<meta name="description" content="Ramblings and dumb ideas">
+		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Megh&#39;s Blog">
+		<link rel="alternate" href="/feed/feed.json" type="application/json" title="Megh&#39;s Blog">
+		
+		<style>/* Only include the syntax highlighter CSS on blog posts */
+/**
+ * okaidia theme for JavaScript, CSS and HTML
+ * Loosely based on Monokai textmate theme by http://www.monokai.nl/
+ * @author ocodia
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #f8f8f2;
+	background: none;
+	text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+	border-radius: 0.3em;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #272822;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #8292a2;
+}
+
+.token.punctuation {
+	color: #f8f8f2;
+}
+
+.token.namespace {
+	opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+	color: #f92672;
+}
+
+.token.boolean,
+.token.number {
+	color: #ae81ff;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	color: #a6e22e;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+	color: #f8f8f2;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+	color: #e6db74;
+}
+
+.token.keyword {
+	color: #66d9ef;
+}
+
+.token.regex,
+.token.important {
+	color: #fd971f;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+* { box-sizing: border-box; }
+/* Defaults */
+:root {
+	--font-family: -apple-system, system-ui, sans-serif;
+	--font-family-monospace: Consolas, Menlo, Monaco, Andale Mono WT, Andale Mono,
+		Lucida Console, Lucida Sans Typewriter, DejaVu Sans Mono,
+		Bitstream Vera Sans Mono, Liberation Mono, Nimbus Mono L, Courier New,
+		Courier, monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #c0c0c0;
+	--color-gray-90: #333;
+
+	--background-color: #fff;
+
+	--text-color: var(--color-gray-90);
+	--text-color-link: #082840;
+	--text-color-link-active: #5f2b48;
+	--text-color-link-visited: #17050f;
+
+	--syntax-tab-size: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-gray-20: #e0e0e0;
+		--color-gray-50: #c0c0c0;
+		--color-gray-90: #dad8d8;
+
+		/* --text-color is assigned to --color-gray-_ above */
+		--text-color-link: #1493fb;
+		--text-color-link-active: #6969f7;
+		--text-color-link-visited: #a6a6f8;
+
+		--background-color: #15202b;
+	}
+}
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 50em;
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p {
+	line-height: 1.5;
+}
+
+li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+main {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.links-nextprev {
+	list-style: none;
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+
+table {
+	margin: 1em 0;
+}
+table td,
+table th {
+	padding-right: 1em;
+}
+
+pre,
+code {
+	font-family: var(--font-family-monospace);
+}
+pre:not([class*="language-"]) {
+	background: #272822;
+	padding: 1em;
+	margin: 0.5em 0;
+	overflow: auto;
+	line-height: 1.375; /* 22px /16 */
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+}
+code {
+	word-break: break-all;
+}
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em 0.5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 1em;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: 0.25em;
+	padding-right: 0.5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-transform: capitalize;
+	font-style: italic;
+}
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.post-metadata time {
+	margin-right: 1em;
+}
+
+/* Direct Links / Markdown Headers */
+.header-anchor {
+	text-decoration: none;
+	font-style: normal;
+	font-size: 1em;
+	margin-left: 0.1em;
+}
+a[href].header-anchor,
+a[href].header-anchor:visited {
+	color: transparent;
+}
+a[href].header-anchor:focus,
+a[href].header-anchor:hover {
+	text-decoration: underline;
+}
+a[href].header-anchor:focus,
+:hover > a[href].header-anchor {
+	color: #aaa;
+}
+
+h2 + .header-anchor {
+	font-size: 1.5em;
+}
+
+/* Modified */
+table,
+th,
+td {
+	border: 1px solid;
+	padding: 0.5em;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* Table of Contents */
+#TableOfContents {
+	margin: 1em 0em;
+}
+#TableOfContents ol::before {
+	content: "Table of Contents";
+	font-weight: bold;
+	text-align: center;
+	display: block;
+	margin-left: -1.25em;
+}
+
+#TableOfContents ol {
+	border: 1px dashed var(--color-gray-90);
+	padding: 0.75em 0.75em 0.75em 2em;
+}
+
+#TableOfContents .active {
+	color: var(--text-color-link-active);
+}
+
+@media (min-width: 80em) {
+	#TableOfContents {
+		display: block;
+		width: calc(50vw - 29em);
+		max-width: 20em;
+		position: -webkit-sticky;
+		position: sticky;
+		height: 0;
+		top: 3.5em;
+		margin: 0em;
+		margin-left: 52em;
+		background: none;
+	}
+}
+
+/* Misc */
+.code-play-button {
+	position: relative;
+}
+
+.code-play-button a {
+	position: absolute;
+	text-decoration: none;
+	right: 0em;
+	width: 1.25em;
+	display: inline-block;
+	font-size: 1.5em;
+	color: white;
+	content: "\25B6";
+}</style>
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+
+		<header>
+			<a href="/" class="home-link">Megh&#39;s Blog</a>
+			<nav>
+				<h2 class="visually-hidden">Top level navigation menu</h2>
+				<ul class="nav">
+					<li class="nav-item"><a href="/">Home</a></li>
+					<li class="nav-item"><a href="/archive/">Archive</a></li>
+					<li class="nav-item"><a href="/about/">About Me</a></li>
+					<li class="nav-item"><a href="https://meghprkh.github.io/">Portfolio</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			
+<h1>Handling joysticks and gamepads in linux</h1>
+
+<ul class="post-metadata">
+	<li><time datetime="2016-06-03">03 June 2016</time></li>
+	<li><a href="/tags/gnome/" class="post-tag">GNOME</a>, </li>
+	<li><a href="/tags/gsoc/" class="post-tag">GSoC</a>, </li>
+	<li><a href="/tags/linux/" class="post-tag">Linux</a>, </li>
+	<li><a href="/tags/joystick/" class="post-tag">Joystick</a>, </li>
+	<li><a href="/tags/gamepad/" class="post-tag">Gamepad</a></li>
+</ul>
+
+<aside id="TableOfContents">
+  <nav class="toc" >
+        <ol><li><a href="#generating-guid">Generating GUID</a></li><li><a href="#feature-detection-and-mapping-to-the-sdl-indexes">Feature Detection and mapping to the SDL indexes</a></li><li><a href="#conclusion">Conclusion</a></li></ol>
+      </nav>
+</aside>
+<p>In this post I would share some of the things I came across when dealing with
 the handling of joysticks and gamepads in Linux. One of the goals I wanted to
 achieve was to make our controller mappings compatible with the SDL ones so that
-we can reuse the community maintained controller mapping database that they have.</p><p>The full code can be found <a href=https://gist.github.com/meghprkh/9cdce0cd4e0f41ce93413b250a207a55>here</a>.</p><p>The first thing that I want to clarify is that Linux provides <em>two</em> APIs for
+we can reuse the community maintained controller mapping database that they have.</p>
+<!--more-->
+<p>The full code can be found <a href="https://gist.github.com/meghprkh/9cdce0cd4e0f41ce93413b250a207a55">here</a>.</p>
+<p>The first thing that I want to clarify is that Linux provides <em>two</em> APIs for
 dealing with joysticks. One is the legacy <em>joystick</em> API and the other is the
 modern <em>evdev</em> API. The evdev-based API provides more detailed information about
 the buttons and axes available and SDL2 only supports the evdev API so we
-decided to go with the evdev API.</p><p>Quoting Arch Wiki:</p><blockquote><p><code>/dev/input/jsX</code> maps to the &lsquo;Joystick&rsquo; API interface and <code>/dev/input/event*</code>
-maps to the &lsquo;evdev&rsquo; ones (this also includes other input devices such as mice
+decided to go with the evdev API.</p>
+<p>Quoting Arch Wiki:</p>
+<blockquote>
+<p><code>/dev/input/jsX</code> maps to the 'Joystick' API interface and <code>/dev/input/event*</code>
+maps to the 'evdev' ones (this also includes other input devices such as mice
 and keyboards). Symbolic links to those devices are also available in
-<code>/dev/input/by-id/</code> and <code>/dev/input/by-path/</code> where the legacy &lsquo;Joystick&rsquo; API
-has names ending with -joystick while the &lsquo;evdev&rsquo; have names ending with
-<code>-event-joystick</code>.</p></blockquote><p>For using the evdev API, I decided to use the libevdev library instead of using traditional <code>ioctl</code> calls as this library provided simpler higher-level access to the evdev API.</p><p>Moving on to our main goal: we want to reuse the SDL mappings. The SDL mappings look something like these:</p><pre><code>&quot;guid,name,mappings&quot;
+<code>/dev/input/by-id/</code> and <code>/dev/input/by-path/</code> where the legacy 'Joystick' API
+has names ending with -joystick while the 'evdev' have names ending with
+<code>-event-joystick</code>.</p>
+</blockquote>
+<p>For using the evdev API, I decided to use the libevdev library instead of using traditional <code>ioctl</code> calls as this library provided simpler higher-level access to the evdev API.</p>
+<p>Moving on to our main goal: we want to reuse the SDL mappings. The SDL mappings look something like these:</p>
+<pre><code>&quot;guid,name,mappings&quot;
 &quot;030000006d0400001dc2000014400000,Logitech F310 Gamepad (XInput),a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,&quot;
-</code></pre><p>Quoting SDL documentation:</p><blockquote><p>The mapping format for joystick is:
+</code></pre>
+<p>Quoting SDL documentation:</p>
+<blockquote>
+<p>The mapping format for joystick is:
 bX - a joystick button, index X
 hX.Y - hat X with value Y
 aX - axis X of the joystick
-Buttons can be used as a controller axis and vice versa.</p></blockquote><p>In this post we will assume that we will handle the parsing of this mapping and only need to get the indexes correctly (like <code>b0</code>, <code>a2</code>, etc.)</p><h2 id=generating-guid>Generating GUID</h2><p>So the first problem was to decipher how the GUID was generated. The GUID is an 128-bit code that is time and device independent. Its constructed using the bustype, vendor, product and version of the device. It is generated using the following code:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>get_guid</span>(<span style=color:#66d9ef>struct</span> libevdev <span style=color:#f92672>*</span> dev, guint16 <span style=color:#f92672>*</span> guid) {
-    guid[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> GINT16_TO_LE(libevdev_get_id_bustype(dev));
-    guid[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
-    guid[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> GINT16_TO_LE(libevdev_get_id_vendor(dev));
-    guid[<span style=color:#ae81ff>3</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
-    guid[<span style=color:#ae81ff>4</span>] <span style=color:#f92672>=</span> GINT16_TO_LE(libevdev_get_id_product(dev));
-    guid[<span style=color:#ae81ff>5</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
-    guid[<span style=color:#ae81ff>6</span>] <span style=color:#f92672>=</span> GINT16_TO_LE(libevdev_get_id_version(dev));
-    guid[<span style=color:#ae81ff>7</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
-}
-</code></pre></div><p>As we want it to be device independent, we use the <code>GINT16_TO_LE</code> helper from glib to convert a 16 bit number to little endian.</p><p>But to convert this to string we convert it to its hexadecimal equivalent using the following simple code:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>guid_to_string</span>(guint16 <span style=color:#f92672>*</span> guid, <span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span> guidstr) {
-    <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>char</span> k_rgchHexToASCII[] <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;0123456789abcdef&#34;</span>;
-    <span style=color:#66d9ef>int</span> i;
-    <span style=color:#66d9ef>for</span> (i <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; i <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>8</span>; i<span style=color:#f92672>++</span>) {
-        <span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>char</span> c <span style=color:#f92672>=</span> guid[i];
+Buttons can be used as a controller axis and vice versa.</p>
+</blockquote>
+<p>In this post we will assume that we will handle the parsing of this mapping and only need to get the indexes correctly (like <code>b0</code>, <code>a2</code>, etc.)</p>
+<h2 id="generating-guid" tabindex="-1">Generating GUID <a class="header-anchor" href="#generating-guid">#</a></h2>
+<p>So the first problem was to decipher how the GUID was generated. The GUID is an 128-bit code that is time and device independent. Its constructed using the bustype, vendor, product and version of the device. It is generated using the following code:</p>
+<pre class="language-c" tabindex="0"><code class="language-c"><span class="token keyword">void</span> <span class="token function">get_guid</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">libevdev</span> <span class="token operator">*</span> dev<span class="token punctuation">,</span> guint16 <span class="token operator">*</span> guid<span class="token punctuation">)</span> <span class="token punctuation">{</span><br>    guid<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">GINT16_TO_LE</span><span class="token punctuation">(</span><span class="token function">libevdev_get_id_bustype</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br>    guid<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span><br>    guid<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">GINT16_TO_LE</span><span class="token punctuation">(</span><span class="token function">libevdev_get_id_vendor</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br>    guid<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span><br>    guid<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">GINT16_TO_LE</span><span class="token punctuation">(</span><span class="token function">libevdev_get_id_product</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br>    guid<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span><br>    guid<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">GINT16_TO_LE</span><span class="token punctuation">(</span><span class="token function">libevdev_get_id_version</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br>    guid<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span><br><span class="token punctuation">}</span></code></pre>
+<p>As we want it to be device independent, we use the <code>GINT16_TO_LE</code> helper from glib to convert a 16 bit number to little endian.</p>
+<p>But to convert this to string we convert it to its hexadecimal equivalent using the following simple code:</p>
+<pre class="language-c" tabindex="0"><code class="language-c"><span class="token keyword">void</span> <span class="token function">guid_to_string</span><span class="token punctuation">(</span>guint16 <span class="token operator">*</span> guid<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span> guidstr<span class="token punctuation">)</span> <span class="token punctuation">{</span><br>    <span class="token keyword">static</span> <span class="token keyword">const</span> <span class="token keyword">char</span> k_rgchHexToASCII<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"0123456789abcdef"</span><span class="token punctuation">;</span><br>    <span class="token keyword">int</span> i<span class="token punctuation">;</span><br>    <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><br>        <span class="token keyword">unsigned</span> <span class="token keyword">char</span> c <span class="token operator">=</span> guid<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span><br><br>        <span class="token operator">*</span>guidstr<span class="token operator">++</span> <span class="token operator">=</span> k_rgchHexToASCII<span class="token punctuation">[</span>c <span class="token operator">>></span> <span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">;</span><br>        <span class="token operator">*</span>guidstr<span class="token operator">++</span> <span class="token operator">=</span> k_rgchHexToASCII<span class="token punctuation">[</span>c <span class="token operator">&amp;</span> <span class="token number">0x0F</span><span class="token punctuation">]</span><span class="token punctuation">;</span><br><br>        c <span class="token operator">=</span> guid<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">>></span> <span class="token number">8</span><span class="token punctuation">;</span><br>        <span class="token operator">*</span>guidstr<span class="token operator">++</span> <span class="token operator">=</span> k_rgchHexToASCII<span class="token punctuation">[</span>c <span class="token operator">>></span> <span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">;</span><br>        <span class="token operator">*</span>guidstr<span class="token operator">++</span> <span class="token operator">=</span> k_rgchHexToASCII<span class="token punctuation">[</span>c <span class="token operator">&amp;</span> <span class="token number">0x0F</span><span class="token punctuation">]</span><span class="token punctuation">;</span><br>    <span class="token punctuation">}</span><br>    <span class="token operator">*</span>guidstr <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span><br><span class="token punctuation">}</span></code></pre>
+<h2 id="feature-detection-and-mapping-to-the-sdl-indexes" tabindex="-1">Feature Detection and mapping to the SDL indexes <a class="header-anchor" href="#feature-detection-and-mapping-to-the-sdl-indexes">#</a></h2>
+<p>Now coming to the feature detection part. We use the helper <code>libevdev_has_event_code (dev, type, code)</code> to detect if the device has a button/axis/hat. This way we loop over the possible values of the code for each type (<code>EV_KEY</code> for button, <code>EV_ABS</code> for axes and hat) and map it to an increasing number. That is the first valid axis code we found is <code>axis0</code> or <code>a0</code>, the second valid axis is <code>a1</code> and so on. It is the same for buttons.</p>
+<p>For example, following is part of the code for buttons:</p>
+<pre class="language-c" tabindex="0"><code class="language-c"><span class="token keyword">int</span> nbuttons <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span><br>guint8 key_map<span class="token punctuation">[</span>KEY_MAX<span class="token punctuation">]</span><span class="token punctuation">;</span><br><span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> BTN_JOYSTICK<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> KEY_MAX<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{</span><br>    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">libevdev_has_event_code</span><span class="token punctuation">(</span>dev<span class="token punctuation">,</span> EV_KEY<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><br>        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d - Joystick has button: 0x%x - %s\n"</span><span class="token punctuation">,</span> nbuttons<span class="token punctuation">,</span> i<span class="token punctuation">,</span><br>                <span class="token function">libevdev_event_code_get_name</span><span class="token punctuation">(</span>EV_KEY<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br>        key_map<span class="token punctuation">[</span>i <span class="token operator">-</span> BTN_MISC<span class="token punctuation">]</span> <span class="token operator">=</span> nbuttons<span class="token punctuation">;</span><br>        <span class="token operator">++</span>nbuttons<span class="token punctuation">;</span><br>    <span class="token punctuation">}</span><br><span class="token punctuation">}</span></code></pre>
+<p>And while polling we find the button number through this <code>key_map</code>:</p>
+<pre class="language-c" tabindex="0"><code class="language-c"><span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Button %d\n"</span><span class="token punctuation">,</span> key_map<span class="token punctuation">[</span>ev<span class="token punctuation">.</span>code <span class="token operator">-</span> BTN_MISC<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>We do similar stuff for axes and hats even though the way we map changes. The hats mapping like <code>h0.4</code> can be done using a simple map from code and value. But SDL returns output as a 8-way dpad giving one of the eight values (like up, leftup, etc.) while evdev gives hat as two axes and reports two events: left and up on pressing the dpad/hat in the leftup direction.</p>
+<h2 id="conclusion" tabindex="-1">Conclusion <a class="header-anchor" href="#conclusion">#</a></h2>
+<p>For polling events we use the <code>libevdev_next_event</code> function. The full <strong>libevdev documentation</strong> can be found <a href="https://www.freedesktop.org/software/libevdev/doc/latest/">here</a></p>
+<p>The <strong>full code</strong> can be found <a href="https://gist.github.com/meghprkh/9cdce0cd4e0f41ce93413b250a207a55">here</a>. While this code uses glib, it only uses simple helper functions from glib which can be easily reimplemented. The only complex glib functions used are to detect the event-joystick device from the <code>/dev/input/by-path</code> folder. This code also doesnot have several fallbacks that the SDL code has.</p>
+<p>My future work will involve the integration of this 'playground' code into the main GNOME Games code and also parsing the mapping. Other things that need to be done is to handle hats properly, handle fallbacks and see if we want to detect joystick devices by polling only or use udev.</p>
 
-        <span style=color:#f92672>*</span>guidstr<span style=color:#f92672>++</span> <span style=color:#f92672>=</span> k_rgchHexToASCII[c <span style=color:#f92672>&gt;&gt;</span> <span style=color:#ae81ff>4</span>];
-        <span style=color:#f92672>*</span>guidstr<span style=color:#f92672>++</span> <span style=color:#f92672>=</span> k_rgchHexToASCII[c <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0x0F</span>];
+<ul class="links-nextprev"><li>Previous: <a href="/posts/gsoc-2016-introduction/">GSoC 2016: Introduction</a></li><li>Next: <a href="/posts/gsoc-progress-so-far/">GSoC - Progress so far</a></li>
 
-        c <span style=color:#f92672>=</span> guid[i] <span style=color:#f92672>&gt;&gt;</span> <span style=color:#ae81ff>8</span>;
-        <span style=color:#f92672>*</span>guidstr<span style=color:#f92672>++</span> <span style=color:#f92672>=</span> k_rgchHexToASCII[c <span style=color:#f92672>&gt;&gt;</span> <span style=color:#ae81ff>4</span>];
-        <span style=color:#f92672>*</span>guidstr<span style=color:#f92672>++</span> <span style=color:#f92672>=</span> k_rgchHexToASCII[c <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0x0F</span>];
-    }
-    <span style=color:#f92672>*</span>guidstr <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;\0&#39;</span>;
-}
-</code></pre></div><h2 id=feature-detection-and-mapping-to-the-sdl-indexes>Feature Detection and mapping to the SDL indexes</h2><p>Now coming to the feature detection part. We use the helper <code>libevdev_has_event_code (dev, type, code)</code> to detect if the device has a button/axis/hat. This way we loop over the possible values of the code for each type (<code>EV_KEY</code> for button, <code>EV_ABS</code> for axes and hat) and map it to an increasing number. That is the first valid axis code we found is <code>axis0</code> or <code>a0</code>, the second valid axis is <code>a1</code> and so on. It is the same for buttons.</p><p>For example, following is part of the code for buttons:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>int</span> nbuttons <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
-guint8 key_map[KEY_MAX];
-<span style=color:#66d9ef>for</span> (i <span style=color:#f92672>=</span> BTN_JOYSTICK; i <span style=color:#f92672>&lt;</span> KEY_MAX; <span style=color:#f92672>++</span>i) {
-    <span style=color:#66d9ef>if</span> (libevdev_has_event_code(dev, EV_KEY, i)) {
-        printf(<span style=color:#e6db74>&#34;%d - Joystick has button: 0x%x - %s</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, nbuttons, i,
-                libevdev_event_code_get_name(EV_KEY, i));
-        key_map[i <span style=color:#f92672>-</span> BTN_MISC] <span style=color:#f92672>=</span> nbuttons;
-        <span style=color:#f92672>++</span>nbuttons;
-    }
-}
-</code></pre></div><p>And while polling we find the button number through this <code>key_map</code>:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>printf(<span style=color:#e6db74>&#34;Button %d</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, key_map[ev.code <span style=color:#f92672>-</span> BTN_MISC]);
-</code></pre></div><p>We do similar stuff for axes and hats even though the way we map changes. The hats mapping like <code>h0.4</code> can be done using a simple map from code and value. But SDL returns output as a 8-way dpad giving one of the eight values (like up, leftup, etc.) while evdev gives hat as two axes and reports two events: left and up on pressing the dpad/hat in the leftup direction.</p><h2 id=conclusion>Conclusion</h2><p>For polling events we use the <code>libevdev_next_event</code> function. The full <strong>libevdev documentation</strong> can be found <a href=https://www.freedesktop.org/software/libevdev/doc/latest/>here</a></p><p>The <strong>full code</strong> can be found <a href=https://gist.github.com/meghprkh/9cdce0cd4e0f41ce93413b250a207a55>here</a>. While this code uses glib, it only uses simple helper functions from glib which can be easily reimplemented. The only complex glib functions used are to detect the event-joystick device from the <code>/dev/input/by-path</code> folder. This code also doesnot have several fallbacks that the SDL code has.</p><p>My future work will involve the integration of this &lsquo;playground&rsquo; code into the main GNOME Games code and also parsing the mapping. Other things that need to be done is to handle hats properly, handle fallbacks and see if we want to detect joystick devices by polling only or use udev.</p></div><div class=tags>[ Tags:
-<a href=../../tags/gnome>#GNOME</a>
-<a href=../../tags/gsoc>#GSoC</a>
-<a href=../../tags/linux>#Linux</a>
-<a href=../../tags/joystick>#Joystick</a>
-<a href=../../tags/gamepad>#Gamepad</a>
-]</div></article><script src=https://utteranc.es/client.js repo=meghprkh/blog issue-term=pathname label=comments theme=github-light crossorigin=anonymous async></script></main><footer><p>&copy; 2022 <a href=http://meghprkh.github.io/blog/>Megh's Blog</a></p></footer><script src=../../js/theme.js></script></body></html>
+<script src="/js/index.js"></script>
+<script src="https://utteranc.es/client.js"
+        repo="meghprkh/blog"
+        issue-term="pathname"
+        label="comments"
+        theme="preferred-color-scheme"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+		</main>
+
+		<footer></footer>
+
+		<!-- Current page: /posts/handling-joysticks-and-gamepads-in-linux/ -->
+	</body>
+
+	<script data-goatcounter="https://meghprkh.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+	<noscript>
+		<img src="https://meghprkh.goatcounter.com/count?p=/blog/posts/handling-joysticks-and-gamepads-in-linux/?noscript">
+	</noscript>
+</html>

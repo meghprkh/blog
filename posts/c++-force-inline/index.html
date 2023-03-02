@@ -1,23 +1,661 @@
-<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><title>Force Inline in C++</title><link rel=stylesheet href=../../css/style.css></head><body><header class=site-header><h1>Megh's Blog</h1><nav><ul><li><a href=../../>Home</a></li><li><a href=../../categories>Categories</a></li><li><a href=../../tags>Tags</a></li><li><a href=../../about>About</a></li><li><a href=../../index.xml>Feed</a></li></ul></nav></header><main><article class=post><h1 class=title>Force Inline in C++</h1><div class=article-details><time>Sun Sep 4 2022</time>
-in
-<a href=../../categories/c++>C++</a></div><div><p>Function calls are expensive. They require allocating a new stack frame, pushing params calling, return values. And lets not get started on calling conventions. <code>inline</code>, <code>always_inline</code> and <code>forceinline</code> are just hints. They dont always inline <sup id=fnref:1><a href=#fn:1 class=footnote-ref role=doc-noteref>1</a></sup> <sup id=fnref:2><a href=#fn:2 class=footnote-ref role=doc-noteref>2</a></sup>.</p><p>Trust the compiler some say. Profile your code say the others. Use macros say the old and wise.</p><p>But what if you are developing a library and need to ensure that your method gets inlined? You cant say trust the compiler, because the users want to trust your library. You cant profile the code, because the application isn&rsquo;t your code.</p><p>We want a <code>FORCE_INLINE</code> keyword that <em>just works</em>, at least on the three major compilers - <code>g++</code>, <code>clang</code> and <code>msvc</code>. If it cant inline, it should error in a meaningful way.</p><p>The example:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>int</span> <span style=color:#a6e22e>decrement</span>(<span style=color:#66d9ef>int</span> x) { <span style=color:#66d9ef>return</span> x <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>; }
-<span style=color:#66d9ef>int</span> <span style=color:#a6e22e>factorial</span>(<span style=color:#66d9ef>int</span> x) { <span style=color:#66d9ef>return</span> (x <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>) <span style=color:#f92672>?</span> <span style=color:#ae81ff>1</span> <span style=color:#f92672>:</span> x <span style=color:#f92672>*</span> factorial(x <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>); }
-</code></pre></div><p>Putting our <code>FORCE_INLINE</code> keyword in front of <code>decrement</code> should inline.</p><p>It should either compile-time error or link-time error if put it in front of <code>factorial</code> (as the recursion depth / input argument is not known at compile-time).</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>#if defined(__clang__)
-#define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Force Inline in C++</title>
+		<meta name="description" content="Ramblings and dumb ideas">
+		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Megh&#39;s Blog">
+		<link rel="alternate" href="/feed/feed.json" type="application/json" title="Megh&#39;s Blog">
+		
+		<style>/* Only include the syntax highlighter CSS on blog posts */
+/**
+ * okaidia theme for JavaScript, CSS and HTML
+ * Loosely based on Monokai textmate theme by http://www.monokai.nl/
+ * @author ocodia
+ */
 
-#elif defined(__GNUC__)
-#define FORCE_INLINE [[gnu::always_inline]] inline
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #f8f8f2;
+	background: none;
+	text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
 
-#elif defined(_MSC_VER)
-#pragma warning(error: 4714)
-#define FORCE_INLINE __forceinline
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
 
-#else
-#error Unsupported compiler
-#endif
-</code></pre></div><p>Now lets check it in action:</p><table><thead><tr><th style=text-align:left>Compiler</th><th style=text-align:left>Working case</th><th style=text-align:left>Error case</th><th style=text-align:left>Error type</th></tr></thead><tbody><tr><td style=text-align:left>Clang</td><td style=text-align:left><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siY29tcGlsZXJzIjpbeyJpZCI6ImNsYW5nMTQwMCIsIm9wdGlvbnMiOiIifV0sImV4ZWN1dG9ycyI6W3siYXJndW1lbnRzIjoiYSBiIGMgZCBlIiwiY29tcGlsZXIiOnsiaWQiOiJjbGFuZzE0MDAiLCJvcHRpb25zIjoiIn0sImNvbXBpbGVyT3V0cHV0VmlzaWJsZSI6InRydWUifV0sImlkIjoxLCJsYW5ndWFnZSI6ImMrKyIsInNvdXJjZSI6IiNpZiBkZWZpbmVkKF9fY2xhbmdfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gW1tnbnU6OmdudV9pbmxpbmVdXSBleHRlcm4gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9fR05VQ19fKVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgW1tnbnU6OmFsd2F5c19pbmxpbmVdXSBpbmxpbmVcbiNlbGlmIGRlZmluZWQoX01TQ19WRVIpXG4jcHJhZ21hIHdhcm5pbmcoZXJyb3I6IDQ3MTQpXG4jZGVmaW5lIEZPUkNFX0lOTElORSBfX2ZvcmNlaW5saW5lXG4jZWxzZVxuI2Vycm9yIFVuc3VwcG9ydGVkIGNvbXBpbGVyXG4jZW5kaWZcblxuRk9SQ0VfSU5MSU5FIGludCBkZWNyZW1lbnQoaW50IHgpIHsgcmV0dXJuIHggLSAxOyB9XG5pbnQgZmFjdG9yaWFsKGludCB4KSB7IHJldHVybiAoeCA9PSAwKSA%2FIDEgOiB4ICogZmFjdG9yaWFsKHggLSAxKTsgfVxuXG5pbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKiBhcmd2KSB7XG4gICAgLy8gRXhlY3V0ZWQgd2l0aCBhcmdzIFwiYSBiIGMgZCBlXCIsIHNob3VsZCByZXR1cm4gMTIwIG5vcm1hbGx5XG4gICAgcmV0dXJuIGZhY3RvcmlhbChkZWNyZW1lbnQoYXJnYykpO1xufSJ9XX0=">clang_working</a></td><td style=text-align:left><a href=https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siY29tcGlsZXJzIjpbeyJpZCI6ImNsYW5nMTQwMCIsIm9wdGlvbnMiOiIifV0sImV4ZWN1dG9ycyI6W3siYXJndW1lbnRzIjoiYSBiIGMgZCBlIiwiY29tcGlsZXIiOnsiaWQiOiJjbGFuZzE0MDAiLCJvcHRpb25zIjoiIn0sImNvbXBpbGVyT3V0cHV0VmlzaWJsZSI6InRydWUifV0sImlkIjoxLCJsYW5ndWFnZSI6ImMrKyIsInNvdXJjZSI6IiNpZiBkZWZpbmVkKF9fY2xhbmdfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gW1tnbnU6OmdudV9pbmxpbmVdXSBleHRlcm4gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9fR05VQ19fKVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgW1tnbnU6OmFsd2F5c19pbmxpbmVdXSBpbmxpbmVcbiNlbGlmIGRlZmluZWQoX01TQ19WRVIpXG4jcHJhZ21hIHdhcm5pbmcoZXJyb3I6IDQ3MTQpXG4jZGVmaW5lIEZPUkNFX0lOTElORSBfX2ZvcmNlaW5saW5lXG4jZWxzZVxuI2Vycm9yIFVuc3VwcG9ydGVkIGNvbXBpbGVyXG4jZW5kaWZcblxuRk9SQ0VfSU5MSU5FIGludCBkZWNyZW1lbnQoaW50IHgpIHsgcmV0dXJuIHggLSAxOyB9XG5GT1JDRV9JTkxJTkUgaW50IGZhY3RvcmlhbChpbnQgeCkgeyByZXR1cm4gKHggPT0gMCkgPyAxIDogeCAqIGZhY3RvcmlhbCh4IC0gMSk7IH1cblxuaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKiogYXJndikge1xuICAgIC8vIEV4ZWN1dGVkIHdpdGggYXJncyBcImEgYiBjIGQgZVwiLCBzaG91bGQgcmV0dXJuIDEyMCBub3JtYWxseVxuICAgIHJldHVybiBmYWN0b3JpYWwoZGVjcmVtZW50KGFyZ2MpKTtcbn0ifV19>clang_error</a></td><td style=text-align:left>Linker error</td></tr><tr><td style=text-align:left>GCC</td><td style=text-align:left><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siY29tcGlsZXJzIjpbeyJpZCI6ImcxMjEiLCJvcHRpb25zIjoiIn1dLCJleGVjdXRvcnMiOlt7ImFyZ3VtZW50cyI6ImEgYiBjIGQgZSIsImNvbXBpbGVyIjp7ImlkIjoiZzEyMSIsIm9wdGlvbnMiOiIifSwiY29tcGlsZXJPdXRwdXRWaXNpYmxlIjoidHJ1ZSJ9XSwiaWQiOjEsImxhbmd1YWdlIjoiYysrIiwic291cmNlIjoiI2lmIGRlZmluZWQoX19jbGFuZ19fKVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgW1tnbnU6OmFsd2F5c19pbmxpbmVdXSBbW2dudTo6Z251X2lubGluZV1dIGV4dGVybiBpbmxpbmVcbiNlbGlmIGRlZmluZWQoX19HTlVDX18pXG4jZGVmaW5lIEZPUkNFX0lOTElORSBbW2dudTo6YWx3YXlzX2lubGluZV1dIGlubGluZVxuI2VsaWYgZGVmaW5lZChfTVNDX1ZFUilcbiNwcmFnbWEgd2FybmluZyhlcnJvcjogNDcxNClcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIF9fZm9yY2VpbmxpbmVcbiNlbHNlXG4jZXJyb3IgVW5zdXBwb3J0ZWQgY29tcGlsZXJcbiNlbmRpZlxuXG5GT1JDRV9JTkxJTkUgaW50IGRlY3JlbWVudChpbnQgeCkgeyByZXR1cm4geCAtIDE7IH1cbmludCBmYWN0b3JpYWwoaW50IHgpIHsgcmV0dXJuICh4ID09IDApID8gMSA6IHggKiBmYWN0b3JpYWwoeCAtIDEpOyB9XG5cbmludCBtYWluKGludCBhcmdjLCBjaGFyICoqIGFyZ3YpIHtcbiAgICAvLyBFeGVjdXRlZCB3aXRoIGFyZ3MgXCJhIGIgYyBkIGVcIiwgc2hvdWxkIHJldHVybiAxMjAgbm9ybWFsbHlcbiAgICByZXR1cm4gZmFjdG9yaWFsKGRlY3JlbWVudChhcmdjKSk7XG59In1dfQ==">gcc_working</a></td><td style=text-align:left><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siY29tcGlsZXJzIjpbeyJpZCI6ImcxMjEiLCJvcHRpb25zIjoiIn1dLCJleGVjdXRvcnMiOlt7ImFyZ3VtZW50cyI6ImEgYiBjIGQgZSIsImNvbXBpbGVyIjp7ImlkIjoiZzEyMSIsIm9wdGlvbnMiOiIifSwiY29tcGlsZXJPdXRwdXRWaXNpYmxlIjoidHJ1ZSJ9XSwiaWQiOjEsImxhbmd1YWdlIjoiYysrIiwic291cmNlIjoiI2lmIGRlZmluZWQoX19jbGFuZ19fKVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgW1tnbnU6OmFsd2F5c19pbmxpbmVdXSBbW2dudTo6Z251X2lubGluZV1dIGV4dGVybiBpbmxpbmVcbiNlbGlmIGRlZmluZWQoX19HTlVDX18pXG4jZGVmaW5lIEZPUkNFX0lOTElORSBbW2dudTo6YWx3YXlzX2lubGluZV1dIGlubGluZVxuI2VsaWYgZGVmaW5lZChfTVNDX1ZFUilcbiNwcmFnbWEgd2FybmluZyhlcnJvcjogNDcxNClcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIF9fZm9yY2VpbmxpbmVcbiNlbHNlXG4jZXJyb3IgVW5zdXBwb3J0ZWQgY29tcGlsZXJcbiNlbmRpZlxuXG5GT1JDRV9JTkxJTkUgaW50IGRlY3JlbWVudChpbnQgeCkgeyByZXR1cm4geCAtIDE7IH1cbkZPUkNFX0lOTElORSBpbnQgZmFjdG9yaWFsKGludCB4KSB7IHJldHVybiAoeCA9PSAwKSA%2FIDEgOiB4ICogZmFjdG9yaWFsKHggLSAxKTsgfVxuXG5pbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKiBhcmd2KSB7XG4gICAgLy8gRXhlY3V0ZWQgd2l0aCBhcmdzIFwiYSBiIGMgZCBlXCIsIHNob3VsZCByZXR1cm4gMTIwIG5vcm1hbGx5XG4gICAgcmV0dXJuIGZhY3RvcmlhbChkZWNyZW1lbnQoYXJnYykpO1xufSJ9XX0=">gcc_error</a></td><td style=text-align:left>Compile error</td></tr><tr><td style=text-align:left>MSVC</td><td style=text-align:left><a href=https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siY29tcGlsZXJzIjpbeyJpZCI6InZjcHBfdjE5X2xhdGVzdF94NjQiLCJvcHRpb25zIjoiL09iMSJ9XSwiZXhlY3V0b3JzIjpbeyJhcmd1bWVudHMiOiJhIGIgYyBkIGUiLCJjb21waWxlciI6eyJpZCI6InZjcHBfdjE5X2xhdGVzdF94NjQiLCJvcHRpb25zIjoiL09iMSJ9LCJjb21waWxlck91dHB1dFZpc2libGUiOiJ0cnVlIn1dLCJpZCI6MSwibGFuZ3VhZ2UiOiJjKysiLCJzb3VyY2UiOiIjaWYgZGVmaW5lZChfX2NsYW5nX18pXG4jZGVmaW5lIEZPUkNFX0lOTElORSBbW2dudTo6YWx3YXlzX2lubGluZV1dIFtbZ251OjpnbnVfaW5saW5lXV0gZXh0ZXJuIGlubGluZVxuI2VsaWYgZGVmaW5lZChfX0dOVUNfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9NU0NfVkVSKVxuI3ByYWdtYSB3YXJuaW5nKGVycm9yOiA0NzE0KVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgX19mb3JjZWlubGluZVxuI2Vsc2VcbiNlcnJvciBVbnN1cHBvcnRlZCBjb21waWxlclxuI2VuZGlmXG5cbkZPUkNFX0lOTElORSBpbnQgZGVjcmVtZW50KGludCB4KSB7IHJldHVybiB4IC0gMTsgfVxuaW50IGZhY3RvcmlhbChpbnQgeCkgeyByZXR1cm4gKHggPT0gMCkgPyAxIDogeCAqIGZhY3RvcmlhbCh4IC0gMSk7IH1cblxuaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKiogYXJndikge1xuICAgIC8vIEV4ZWN1dGVkIHdpdGggYXJncyBcImEgYiBjIGQgZVwiLCBzaG91bGQgcmV0dXJuIDEyMCBub3JtYWxseVxuICAgIHJldHVybiBmYWN0b3JpYWwoZGVjcmVtZW50KGFyZ2MpKTtcbn0ifV19>msvc_working</a></td><td style=text-align:left><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siY29tcGlsZXJzIjpbeyJpZCI6InZjcHBfdjE5X2xhdGVzdF94NjQiLCJvcHRpb25zIjoiL09iMSJ9XSwiZXhlY3V0b3JzIjpbeyJhcmd1bWVudHMiOiJhIGIgYyBkIGUiLCJjb21waWxlciI6eyJpZCI6InZjcHBfdjE5X2xhdGVzdF94NjQiLCJvcHRpb25zIjoiL09iMSJ9LCJjb21waWxlck91dHB1dFZpc2libGUiOiJ0cnVlIn1dLCJpZCI6MSwibGFuZ3VhZ2UiOiJjKysiLCJzb3VyY2UiOiIjaWYgZGVmaW5lZChfX2NsYW5nX18pXG4jZGVmaW5lIEZPUkNFX0lOTElORSBbW2dudTo6YWx3YXlzX2lubGluZV1dIFtbZ251OjpnbnVfaW5saW5lXV0gZXh0ZXJuIGlubGluZVxuI2VsaWYgZGVmaW5lZChfX0dOVUNfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9NU0NfVkVSKVxuI3ByYWdtYSB3YXJuaW5nKGVycm9yOiA0NzE0KVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgX19mb3JjZWlubGluZVxuI2Vsc2VcbiNlcnJvciBVbnN1cHBvcnRlZCBjb21waWxlclxuI2VuZGlmXG5cbkZPUkNFX0lOTElORSBpbnQgZGVjcmVtZW50KGludCB4KSB7IHJldHVybiB4IC0gMTsgfVxuRk9SQ0VfSU5MSU5FIGludCBmYWN0b3JpYWwoaW50IHgpIHsgcmV0dXJuICh4ID09IDApID8gMSA6IHggKiBmYWN0b3JpYWwoeCAtIDEpOyB9XG5cbmludCBtYWluKGludCBhcmdjLCBjaGFyICoqIGFyZ3YpIHtcbiAgICAvLyBFeGVjdXRlZCB3aXRoIGFyZ3MgXCJhIGIgYyBkIGVcIiwgc2hvdWxkIHJldHVybiAxMjAgbm9ybWFsbHlcbiAgICByZXR1cm4gZmFjdG9yaWFsKGRlY3JlbWVudChhcmdjKSk7XG59In1dfQ==">msvc_error</a></td><td style=text-align:left>Compile error (requires optimization flag)</td></tr></tbody></table><p>How it works:</p><ul><li>GCC would generate an error if it cant <code>always_inline</code> <sup id=fnref:3><a href=#fn:3 class=footnote-ref role=doc-noteref>3</a></sup></li><li>Clang:<ul><li>Does not generate an error for non-inlinable <code>always_inline</code> functions. <sup id=fnref:1><a href=#fn:1 class=footnote-ref role=doc-noteref>1</a></sup></li><li>Instead <code>gnu_inline</code> and <code>extern inline</code> forces it to not generate any code for the function <sup id=fnref:4><a href=#fn:4 class=footnote-ref role=doc-noteref>4</a></sup> <sup id=fnref:5><a href=#fn:5 class=footnote-ref role=doc-noteref>5</a></sup></li><li>Thus give a linker error if it is not inlined</li></ul></li><li>MSVC:<ul><li>Generates a warning for for non-inlinable <code>__forceinline</code> functions</li><li>But only if compiled with any &ldquo;inline expansion&rdquo; optimization (<code>/Ob&lt;n></code>) <sup id=fnref:2><a href=#fn:2 class=footnote-ref role=doc-noteref>2</a></sup></li><li>This is present with <code>/O1</code> or <code>/O2</code></li><li>We promote this warning to an error</li></ul></li></ul><p><strong>Note</strong>: do not use this with virtual functions. You can&rsquo;t &ldquo;force inline&rdquo; them as they need to be pointed to at runtime.</p><p>GCC summarizes this as &ldquo;An Inline Function is As Fast As a Macro&rdquo; <sup id=fnref:5><a href=#fn:5 class=footnote-ref role=doc-noteref>5</a></sup>. Zig provides something similar as its <a href=https://ziglang.org/documentation/0.9.1/#Functions><code>callconv(.Inline)</code></a></p><p>Thus we can and should build syntactic sugar as functions instead of weird macros. Without any worries of performance.</p><section class=footnotes role=doc-endnotes><hr><ol><li id=fn:1 role=doc-endnote><p><a href=https://clang.llvm.org/docs/AttributeReference.html#always-inline-force-inline>https://clang.llvm.org/docs/AttributeReference.html#always-inline-force-inline</a> <a href=#fnref:1 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:2 role=doc-endnote><p><a href=https://docs.microsoft.com/en-us/cpp/cpp/inline-functions-cpp>https://docs.microsoft.com/en-us/cpp/cpp/inline-functions-cpp</a> <a href=#fnref:2 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:3 role=doc-endnote><p><a href=https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#always_inline>https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#always_inline</a> <a href=#fnref:3 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:4 role=doc-endnote><p><a href=https://clang.llvm.org/docs/AttributeReference.html#gnu-inline>https://clang.llvm.org/docs/AttributeReference.html#gnu-inline</a> <a href=#fnref:4 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li><li id=fn:5 role=doc-endnote><p><a href=https://gcc.gnu.org/onlinedocs/gcc/Inline.html>https://gcc.gnu.org/onlinedocs/gcc/Inline.html</a> <a href=#fnref:5 class=footnote-backref role=doc-backlink>&#8617;&#xfe0e;</a></p></li></ol></section></div><div class=tags>[ Tags:
-<a href=../../tags/c++>#C++</a>
-]
-[ Crossposts:
-<a href=https://www.reddit.com/r/cpp/comments/x5b6qk/force_inline_in_c/>reddit</a>
-]</div></article><script src=https://utteranc.es/client.js repo=meghprkh/blog issue-term=pathname label=comments theme=github-light crossorigin=anonymous async></script></main><footer><p>&copy; 2022 <a href=http://meghprkh.github.io/blog/>Megh's Blog</a></p></footer><script src=../../js/theme.js></script></body></html>
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+	border-radius: 0.3em;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #272822;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #8292a2;
+}
+
+.token.punctuation {
+	color: #f8f8f2;
+}
+
+.token.namespace {
+	opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+	color: #f92672;
+}
+
+.token.boolean,
+.token.number {
+	color: #ae81ff;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	color: #a6e22e;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+	color: #f8f8f2;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+	color: #e6db74;
+}
+
+.token.keyword {
+	color: #66d9ef;
+}
+
+.token.regex,
+.token.important {
+	color: #fd971f;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+* { box-sizing: border-box; }
+/* Defaults */
+:root {
+	--font-family: -apple-system, system-ui, sans-serif;
+	--font-family-monospace: Consolas, Menlo, Monaco, Andale Mono WT, Andale Mono,
+		Lucida Console, Lucida Sans Typewriter, DejaVu Sans Mono,
+		Bitstream Vera Sans Mono, Liberation Mono, Nimbus Mono L, Courier New,
+		Courier, monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #c0c0c0;
+	--color-gray-90: #333;
+
+	--background-color: #fff;
+
+	--text-color: var(--color-gray-90);
+	--text-color-link: #082840;
+	--text-color-link-active: #5f2b48;
+	--text-color-link-visited: #17050f;
+
+	--syntax-tab-size: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-gray-20: #e0e0e0;
+		--color-gray-50: #c0c0c0;
+		--color-gray-90: #dad8d8;
+
+		/* --text-color is assigned to --color-gray-_ above */
+		--text-color-link: #1493fb;
+		--text-color-link-active: #6969f7;
+		--text-color-link-visited: #a6a6f8;
+
+		--background-color: #15202b;
+	}
+}
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 50em;
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p {
+	line-height: 1.5;
+}
+
+li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+main {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.links-nextprev {
+	list-style: none;
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+
+table {
+	margin: 1em 0;
+}
+table td,
+table th {
+	padding-right: 1em;
+}
+
+pre,
+code {
+	font-family: var(--font-family-monospace);
+}
+pre:not([class*="language-"]) {
+	background: #272822;
+	padding: 1em;
+	margin: 0.5em 0;
+	overflow: auto;
+	line-height: 1.375; /* 22px /16 */
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+}
+code {
+	word-break: break-all;
+}
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em 0.5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 1em;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: 0.25em;
+	padding-right: 0.5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-transform: capitalize;
+	font-style: italic;
+}
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.post-metadata time {
+	margin-right: 1em;
+}
+
+/* Direct Links / Markdown Headers */
+.header-anchor {
+	text-decoration: none;
+	font-style: normal;
+	font-size: 1em;
+	margin-left: 0.1em;
+}
+a[href].header-anchor,
+a[href].header-anchor:visited {
+	color: transparent;
+}
+a[href].header-anchor:focus,
+a[href].header-anchor:hover {
+	text-decoration: underline;
+}
+a[href].header-anchor:focus,
+:hover > a[href].header-anchor {
+	color: #aaa;
+}
+
+h2 + .header-anchor {
+	font-size: 1.5em;
+}
+
+/* Modified */
+table,
+th,
+td {
+	border: 1px solid;
+	padding: 0.5em;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* Table of Contents */
+#TableOfContents {
+	margin: 1em 0em;
+}
+#TableOfContents ol::before {
+	content: "Table of Contents";
+	font-weight: bold;
+	text-align: center;
+	display: block;
+	margin-left: -1.25em;
+}
+
+#TableOfContents ol {
+	border: 1px dashed var(--color-gray-90);
+	padding: 0.75em 0.75em 0.75em 2em;
+}
+
+#TableOfContents .active {
+	color: var(--text-color-link-active);
+}
+
+@media (min-width: 80em) {
+	#TableOfContents {
+		display: block;
+		width: calc(50vw - 29em);
+		max-width: 20em;
+		position: -webkit-sticky;
+		position: sticky;
+		height: 0;
+		top: 3.5em;
+		margin: 0em;
+		margin-left: 52em;
+		background: none;
+	}
+}
+
+/* Misc */
+.code-play-button {
+	position: relative;
+}
+
+.code-play-button a {
+	position: absolute;
+	text-decoration: none;
+	right: 0em;
+	width: 1.25em;
+	display: inline-block;
+	font-size: 1.5em;
+	color: white;
+	content: "\25B6";
+}</style>
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+
+		<header>
+			<a href="/" class="home-link">Megh&#39;s Blog</a>
+			<nav>
+				<h2 class="visually-hidden">Top level navigation menu</h2>
+				<ul class="nav">
+					<li class="nav-item"><a href="/">Home</a></li>
+					<li class="nav-item"><a href="/archive/">Archive</a></li>
+					<li class="nav-item"><a href="/about/">About Me</a></li>
+					<li class="nav-item"><a href="https://meghprkh.github.io/">Portfolio</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			
+<h1>Force Inline in C++</h1>
+
+<ul class="post-metadata">
+	<li><time datetime="2022-09-03">03 September 2022</time></li>
+	<li><a href="/tags/c/" class="post-tag">C++</a></li>
+</ul>
+
+<aside id="TableOfContents">
+  
+</aside>
+<p>Function calls are expensive. They require allocating a new stack frame, pushing params calling, return values. And lets not get started on calling conventions. <code>inline</code>, <code>always_inline</code> and <code>forceinline</code> are just hints. They dont always inline <sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup> <sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>.</p>
+<p>Trust the compiler some say. Profile your code say the others. Use macros say the old and wise.</p>
+<p>But what if you are developing a library and need to ensure that your method gets inlined? You cant say trust the compiler, because the users want to trust your library. You cant profile the code, because the application isn't your code.</p>
+<p>We want a <code>FORCE_INLINE</code> keyword that <em>just works</em>, at least on the three major compilers - <code>g++</code>, <code>clang</code> and <code>msvc</code>. If it cant inline, it should error in a meaningful way.</p>
+<p>The example:</p>
+<pre class="language-cpp" tabindex="0"><code class="language-cpp"><span class="token keyword">int</span> <span class="token function">decrement</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token punctuation">}</span><br><span class="token keyword">int</span> <span class="token function">factorial</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> <span class="token punctuation">(</span>x <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> x <span class="token operator">*</span> <span class="token function">factorial</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">}</span></code></pre>
+<p>Putting our <code>FORCE_INLINE</code> keyword in front of <code>decrement</code> should inline.</p>
+<p>It should either compile-time error or link-time error if put it in front of <code>factorial</code> (as the recursion depth / input argument is not known at compile-time).</p>
+<pre class="language-text" tabindex="0"><code class="language-text">#if defined(__clang__)<br>#define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline<br><br>#elif defined(__GNUC__)<br>#define FORCE_INLINE [[gnu::always_inline]] inline<br><br>#elif defined(_MSC_VER)<br>#pragma warning(error: 4714)<br>#define FORCE_INLINE __forceinline<br><br>#else<br>#error Unsupported compiler<br>#endif</code></pre>
+<p>Now lets check it in action:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Compiler</th>
+<th style="text-align:left">Working case</th>
+<th style="text-align:left">Error case</th>
+<th style="text-align:left">Error type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Clang</td>
+<td style="text-align:left"><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siaWQiOjEsImxhbmd1YWdlIjoiYysrIiwiY29tcGlsZXJzIjpbeyJpZCI6ImNsYW5nMTQwMCJ9XSwiZXhlY3V0b3JzIjpbeyJhcmd1bWVudHMiOiJhIGIgYyBkIGUiLCJjb21waWxlciI6eyJpZCI6ImNsYW5nMTQwMCJ9LCJjb21waWxlck91dHB1dFZpc2libGUiOiJ0cnVlIn1dLCJzb3VyY2UiOiIjaWYgZGVmaW5lZChfX2NsYW5nX18pXG4jZGVmaW5lIEZPUkNFX0lOTElORSBbW2dudTo6YWx3YXlzX2lubGluZV1dIFtbZ251OjpnbnVfaW5saW5lXV0gZXh0ZXJuIGlubGluZVxuI2VsaWYgZGVmaW5lZChfX0dOVUNfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9NU0NfVkVSKVxuI3ByYWdtYSB3YXJuaW5nKGVycm9yOiA0NzE0KVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgX19mb3JjZWlubGluZVxuI2Vsc2VcbiNlcnJvciBVbnN1cHBvcnRlZCBjb21waWxlclxuI2VuZGlmXG5cbkZPUkNFX0lOTElORSBpbnQgZGVjcmVtZW50KGludCB4KSB7IHJldHVybiB4IC0gMTsgfVxuaW50IGZhY3RvcmlhbChpbnQgeCkgeyByZXR1cm4gKHggPT0gMCkgPyAxIDogeCAqIGZhY3RvcmlhbCh4IC0gMSk7IH1cblxuaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKiogYXJndikge1xuICAgIC8vIEV4ZWN1dGVkIHdpdGggYXJncyBcImEgYiBjIGQgZVwiLCBzaG91bGQgcmV0dXJuIDEyMCBub3JtYWxseVxuICAgIHJldHVybiBmYWN0b3JpYWwoZGVjcmVtZW50KGFyZ2MpKTtcbn0ifV19">clang_working</a></td>
+<td style="text-align:left"><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siaWQiOjEsImxhbmd1YWdlIjoiYysrIiwiY29tcGlsZXJzIjpbeyJpZCI6ImNsYW5nMTQwMCJ9XSwiZXhlY3V0b3JzIjpbeyJhcmd1bWVudHMiOiJhIGIgYyBkIGUiLCJjb21waWxlciI6eyJpZCI6ImNsYW5nMTQwMCJ9LCJjb21waWxlck91dHB1dFZpc2libGUiOiJ0cnVlIn1dLCJzb3VyY2UiOiIjaWYgZGVmaW5lZChfX2NsYW5nX18pXG4jZGVmaW5lIEZPUkNFX0lOTElORSBbW2dudTo6YWx3YXlzX2lubGluZV1dIFtbZ251OjpnbnVfaW5saW5lXV0gZXh0ZXJuIGlubGluZVxuI2VsaWYgZGVmaW5lZChfX0dOVUNfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9NU0NfVkVSKVxuI3ByYWdtYSB3YXJuaW5nKGVycm9yOiA0NzE0KVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgX19mb3JjZWlubGluZVxuI2Vsc2VcbiNlcnJvciBVbnN1cHBvcnRlZCBjb21waWxlclxuI2VuZGlmXG5cbkZPUkNFX0lOTElORSBpbnQgZGVjcmVtZW50KGludCB4KSB7IHJldHVybiB4IC0gMTsgfVxuaW50IGZhY3RvcmlhbChpbnQgeCkgeyByZXR1cm4gKHggPT0gMCkgPyAxIDogeCAqIGZhY3RvcmlhbCh4IC0gMSk7IH1cblxuaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKiogYXJndikge1xuICAgIC8vIEV4ZWN1dGVkIHdpdGggYXJncyBcImEgYiBjIGQgZVwiLCBzaG91bGQgcmV0dXJuIDEyMCBub3JtYWxseVxuICAgIHJldHVybiBmYWN0b3JpYWwoZGVjcmVtZW50KGFyZ2MpKTtcbn0ifV19">clang_error</a></td>
+<td style="text-align:left">Linker error</td>
+</tr>
+<tr>
+<td style="text-align:left">GCC</td>
+<td style="text-align:left"><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siaWQiOjEsImxhbmd1YWdlIjoiYysrIiwiY29tcGlsZXJzIjpbeyJpZCI6ImcxMjEifV0sImV4ZWN1dG9ycyI6W3siYXJndW1lbnRzIjoiYSBiIGMgZCBlIiwiY29tcGlsZXIiOnsiaWQiOiJnMTIxIn0sImNvbXBpbGVyT3V0cHV0VmlzaWJsZSI6InRydWUifV0sInNvdXJjZSI6IiNpZiBkZWZpbmVkKF9fY2xhbmdfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gW1tnbnU6OmdudV9pbmxpbmVdXSBleHRlcm4gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9fR05VQ19fKVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgW1tnbnU6OmFsd2F5c19pbmxpbmVdXSBpbmxpbmVcbiNlbGlmIGRlZmluZWQoX01TQ19WRVIpXG4jcHJhZ21hIHdhcm5pbmcoZXJyb3I6IDQ3MTQpXG4jZGVmaW5lIEZPUkNFX0lOTElORSBfX2ZvcmNlaW5saW5lXG4jZWxzZVxuI2Vycm9yIFVuc3VwcG9ydGVkIGNvbXBpbGVyXG4jZW5kaWZcblxuRk9SQ0VfSU5MSU5FIGludCBkZWNyZW1lbnQoaW50IHgpIHsgcmV0dXJuIHggLSAxOyB9XG5pbnQgZmFjdG9yaWFsKGludCB4KSB7IHJldHVybiAoeCA9PSAwKSA%2FIDEgOiB4ICogZmFjdG9yaWFsKHggLSAxKTsgfVxuXG5pbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKiBhcmd2KSB7XG4gICAgLy8gRXhlY3V0ZWQgd2l0aCBhcmdzIFwiYSBiIGMgZCBlXCIsIHNob3VsZCByZXR1cm4gMTIwIG5vcm1hbGx5XG4gICAgcmV0dXJuIGZhY3RvcmlhbChkZWNyZW1lbnQoYXJnYykpO1xufSJ9XX0%3D">gcc_working</a></td>
+<td style="text-align:left"><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siaWQiOjEsImxhbmd1YWdlIjoiYysrIiwiY29tcGlsZXJzIjpbeyJpZCI6ImcxMjEifV0sImV4ZWN1dG9ycyI6W3siYXJndW1lbnRzIjoiYSBiIGMgZCBlIiwiY29tcGlsZXIiOnsiaWQiOiJnMTIxIn0sImNvbXBpbGVyT3V0cHV0VmlzaWJsZSI6InRydWUifV0sInNvdXJjZSI6IiNpZiBkZWZpbmVkKF9fY2xhbmdfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gW1tnbnU6OmdudV9pbmxpbmVdXSBleHRlcm4gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9fR05VQ19fKVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgW1tnbnU6OmFsd2F5c19pbmxpbmVdXSBpbmxpbmVcbiNlbGlmIGRlZmluZWQoX01TQ19WRVIpXG4jcHJhZ21hIHdhcm5pbmcoZXJyb3I6IDQ3MTQpXG4jZGVmaW5lIEZPUkNFX0lOTElORSBfX2ZvcmNlaW5saW5lXG4jZWxzZVxuI2Vycm9yIFVuc3VwcG9ydGVkIGNvbXBpbGVyXG4jZW5kaWZcblxuRk9SQ0VfSU5MSU5FIGludCBkZWNyZW1lbnQoaW50IHgpIHsgcmV0dXJuIHggLSAxOyB9XG5pbnQgZmFjdG9yaWFsKGludCB4KSB7IHJldHVybiAoeCA9PSAwKSA%2FIDEgOiB4ICogZmFjdG9yaWFsKHggLSAxKTsgfVxuXG5pbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKiBhcmd2KSB7XG4gICAgLy8gRXhlY3V0ZWQgd2l0aCBhcmdzIFwiYSBiIGMgZCBlXCIsIHNob3VsZCByZXR1cm4gMTIwIG5vcm1hbGx5XG4gICAgcmV0dXJuIGZhY3RvcmlhbChkZWNyZW1lbnQoYXJnYykpO1xufSJ9XX0%3D">gcc_error</a></td>
+<td style="text-align:left">Compile error</td>
+</tr>
+<tr>
+<td style="text-align:left">MSVC</td>
+<td style="text-align:left"><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siaWQiOjEsImxhbmd1YWdlIjoiYysrIiwiY29tcGlsZXJzIjpbeyJpZCI6InZjcHBfdjE5X2xhdGVzdF94NjQiLCJvcHRpb25zIjoiL09iMSJ9XSwiZXhlY3V0b3JzIjpbeyJhcmd1bWVudHMiOiJhIGIgYyBkIGUiLCJjb21waWxlciI6eyJpZCI6InZjcHBfdjE5X2xhdGVzdF94NjQiLCJvcHRpb25zIjoiL09iMSJ9LCJjb21waWxlck91dHB1dFZpc2libGUiOiJ0cnVlIn1dLCJzb3VyY2UiOiIjaWYgZGVmaW5lZChfX2NsYW5nX18pXG4jZGVmaW5lIEZPUkNFX0lOTElORSBbW2dudTo6YWx3YXlzX2lubGluZV1dIFtbZ251OjpnbnVfaW5saW5lXV0gZXh0ZXJuIGlubGluZVxuI2VsaWYgZGVmaW5lZChfX0dOVUNfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9NU0NfVkVSKVxuI3ByYWdtYSB3YXJuaW5nKGVycm9yOiA0NzE0KVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgX19mb3JjZWlubGluZVxuI2Vsc2VcbiNlcnJvciBVbnN1cHBvcnRlZCBjb21waWxlclxuI2VuZGlmXG5cbkZPUkNFX0lOTElORSBpbnQgZGVjcmVtZW50KGludCB4KSB7IHJldHVybiB4IC0gMTsgfVxuaW50IGZhY3RvcmlhbChpbnQgeCkgeyByZXR1cm4gKHggPT0gMCkgPyAxIDogeCAqIGZhY3RvcmlhbCh4IC0gMSk7IH1cblxuaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKiogYXJndikge1xuICAgIC8vIEV4ZWN1dGVkIHdpdGggYXJncyBcImEgYiBjIGQgZVwiLCBzaG91bGQgcmV0dXJuIDEyMCBub3JtYWxseVxuICAgIHJldHVybiBmYWN0b3JpYWwoZGVjcmVtZW50KGFyZ2MpKTtcbn0ifV19">msvc_working</a></td>
+<td style="text-align:left"><a href="https://godbolt.org/clientstate/eyJzZXNzaW9ucyI6W3siaWQiOjEsImxhbmd1YWdlIjoiYysrIiwiY29tcGlsZXJzIjpbeyJpZCI6InZjcHBfdjE5X2xhdGVzdF94NjQiLCJvcHRpb25zIjoiL09iMSJ9XSwiZXhlY3V0b3JzIjpbeyJhcmd1bWVudHMiOiJhIGIgYyBkIGUiLCJjb21waWxlciI6eyJpZCI6InZjcHBfdjE5X2xhdGVzdF94NjQiLCJvcHRpb25zIjoiL09iMSJ9LCJjb21waWxlck91dHB1dFZpc2libGUiOiJ0cnVlIn1dLCJzb3VyY2UiOiIjaWYgZGVmaW5lZChfX2NsYW5nX18pXG4jZGVmaW5lIEZPUkNFX0lOTElORSBbW2dudTo6YWx3YXlzX2lubGluZV1dIFtbZ251OjpnbnVfaW5saW5lXV0gZXh0ZXJuIGlubGluZVxuI2VsaWYgZGVmaW5lZChfX0dOVUNfXylcbiNkZWZpbmUgRk9SQ0VfSU5MSU5FIFtbZ251OjphbHdheXNfaW5saW5lXV0gaW5saW5lXG4jZWxpZiBkZWZpbmVkKF9NU0NfVkVSKVxuI3ByYWdtYSB3YXJuaW5nKGVycm9yOiA0NzE0KVxuI2RlZmluZSBGT1JDRV9JTkxJTkUgX19mb3JjZWlubGluZVxuI2Vsc2VcbiNlcnJvciBVbnN1cHBvcnRlZCBjb21waWxlclxuI2VuZGlmXG5cbkZPUkNFX0lOTElORSBpbnQgZGVjcmVtZW50KGludCB4KSB7IHJldHVybiB4IC0gMTsgfVxuaW50IGZhY3RvcmlhbChpbnQgeCkgeyByZXR1cm4gKHggPT0gMCkgPyAxIDogeCAqIGZhY3RvcmlhbCh4IC0gMSk7IH1cblxuaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKiogYXJndikge1xuICAgIC8vIEV4ZWN1dGVkIHdpdGggYXJncyBcImEgYiBjIGQgZVwiLCBzaG91bGQgcmV0dXJuIDEyMCBub3JtYWxseVxuICAgIHJldHVybiBmYWN0b3JpYWwoZGVjcmVtZW50KGFyZ2MpKTtcbn0ifV19">msvc_error</a></td>
+<td style="text-align:left">Compile error (requires optimization flag)</td>
+</tr>
+</tbody>
+</table>
+<p>How it works:</p>
+<ul>
+<li>GCC would generate an error if it cant <code>always_inline</code> <sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup></li>
+<li>Clang:
+<ul>
+<li>Does not generate an error for non-inlinable <code>always_inline</code> functions. <sup class="footnote-ref"><a href="#fn1" id="fnref1:1">[1:1]</a></sup></li>
+<li>Instead <code>gnu_inline</code> and <code>extern inline</code> forces it to not generate any code for the function <sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup> <sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup></li>
+<li>Thus give a linker error if it is not inlined</li>
+</ul>
+</li>
+<li>MSVC:
+<ul>
+<li>Generates a warning for for non-inlinable <code>__forceinline</code> functions</li>
+<li>But only if compiled with any &quot;inline expansion&quot; optimization (<code>/Ob&lt;n&gt;</code>) <sup class="footnote-ref"><a href="#fn2" id="fnref2:1">[2:1]</a></sup></li>
+<li>This is present with <code>/O1</code> or <code>/O2</code></li>
+<li>We promote this warning to an error</li>
+</ul>
+</li>
+</ul>
+<p><strong>Note</strong>: do not use this with virtual functions. You can't &quot;force inline&quot; them as they need to be pointed to at runtime.</p>
+<p>GCC summarizes this as &quot;An Inline Function is As Fast As a Macro&quot; <sup class="footnote-ref"><a href="#fn5" id="fnref5:1">[5:1]</a></sup>. Zig provides something similar as its <a href="https://ziglang.org/documentation/0.9.1/#Functions"><code>callconv(.Inline)</code></a></p>
+<p>Thus we can and should build syntactic sugar as functions instead of weird macros. Without any worries of performance.</p>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a href="https://clang.llvm.org/docs/AttributeReference.html#always-inline-force-inline">https://clang.llvm.org/docs/AttributeReference.html#always-inline-force-inline</a> <a href="#fnref1" class="footnote-backref">↩︎</a> <a href="#fnref1:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a href="https://docs.microsoft.com/en-us/cpp/cpp/inline-functions-cpp">https://docs.microsoft.com/en-us/cpp/cpp/inline-functions-cpp</a> <a href="#fnref2" class="footnote-backref">↩︎</a> <a href="#fnref2:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a href="https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#always_inline">https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#always_inline</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><a href="https://clang.llvm.org/docs/AttributeReference.html#gnu-inline">https://clang.llvm.org/docs/AttributeReference.html#gnu-inline</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><a href="https://gcc.gnu.org/onlinedocs/gcc/Inline.html">https://gcc.gnu.org/onlinedocs/gcc/Inline.html</a> <a href="#fnref5" class="footnote-backref">↩︎</a> <a href="#fnref5:1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+<ul class="links-nextprev"><li>Previous: <a href="/posts/c++03-concepts/">C++20 Concepts in C++03</a></li>
+<li>Discuss on:
+
+&nbsp;<a href="https://www.reddit.com/r/cpp/comments/x5b6qk/force_inline_in_c/" target="_blank">reddit</a>
+
+</li>
+</ul>
+
+
+<script src="/js/index.js"></script>
+<script src="https://utteranc.es/client.js"
+        repo="meghprkh/blog"
+        issue-term="pathname"
+        label="comments"
+        theme="preferred-color-scheme"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+		</main>
+
+		<footer></footer>
+
+		<!-- Current page: /posts/c++-force-inline/ -->
+	</body>
+
+	<script data-goatcounter="https://meghprkh.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+	<noscript>
+		<img src="https://meghprkh.goatcounter.com/count?p=/blog/posts/c++-force-inline/?noscript">
+	</noscript>
+</html>

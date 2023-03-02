@@ -1,13 +1,642 @@
-<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><title>Creating an RPM package for a PHP PEAR module</title><link rel=stylesheet href=../../css/style.css></head><body><header class=site-header><h1>Megh's Blog</h1><nav><ul><li><a href=../../>Home</a></li><li><a href=../../categories>Categories</a></li><li><a href=../../tags>Tags</a></li><li><a href=../../about>About</a></li><li><a href=../../index.xml>Feed</a></li></ul></nav></header><main><article class=post><h1 class=title>Creating an RPM package for a PHP PEAR module</h1><div class=article-details><time>Wed Dec 17 2014</time>
-in
-<a href=../../categories/opensource>Opensource</a></div><div><p>I am participating in Google Code In 2014 and two of my tasks were based on RPM packaging for Fedora.<br><a href=http://www.google-melange.com/gci/task/view/google/gci2014/5262603731337216>The first</a> was packaging <a href=http://www.phalconphp.com/en/>PhalconPHP</a> for Fedora while <a href=http://www.google-melange.com/gci/task/view/google/gci2014/5774064475963392>the second</a> was packaging <a href=http://cakephp.org/>CakePHP</a>.<br>Phalcon is an C extension while Cake is a PEAR/Composer extension.</p><p>I will discuss the easier of the two, Cake as it was a PEAR package.</p><p>So first of all, you need to learn some RPM Packaging Basics. <a href=https://fedoraproject.org/wiki/How_to_create_an_RPM_package>This link</a> briefly introduces us to the necessary tools and their setup. But the above link does not introduce us to <a href=http://copr.fedoraproject.org/>Copr</a> which may be used to distribute and even build our RPMS on different platforms (we can use it as a sort of substitute for <a href=https://fedoraproject.org/wiki/How_to_create_an_RPM_package#Mock_and_Koji>Koji or Mock</a>).</p><p>Then I recommend that you read [PHP Packaging wiki](<a href=http://fedoraproject.org/wiki/Packaging>http://fedoraproject.org/wiki/Packaging</a>:</p><h2 id=the-channel-package>The Channel package</h2><p>So lets say we have identified the PEAR channel (pear.example.org) and it is not the standard PEAR channel. So we need to create a CHANNEL package.</p><p>So lets create the SPEC file :
-{% gist meghprkh/066d9477881f168c77b4 %}</p><p>As you can see you just need to edit a few lines (lines 2,3) to update the channel name and URL and the last lines for proper changelogs.</p><p>Now you can build this spec using the <code>rpmbuild</code> command.</p><p>Install the generated RPM on your system (provided the build is successful).</p><h2 id=the-pear-package>The PEAR Package</h2><p>Now lets head on to creating the actual SPEC file of the RPM package.</p><ul><li><p>First install the <code>php-pear-PEAR-Command-Packaging</code> package.</p></li><li><p>Download the PEAR package from the channel (mostly <em><a href=http://channelname/get/name-version.tgz>http://channelname/get/name-version.tgz</a></em>)</p></li><li><p>Run <code>pear make-rpm-spec Foo.tgz</code> .</p></li><li><p>and a spec file will be generated for you (with all required files) …</p></li><li><p>… but if it is not from the standard PEAR channel, you will need to add the channel to the requires and modify certain lines …</p></li><li><p>You may look at <a href=https://gist.github.com/meghprkh/39fa65e683f36a4b3996>my spec for CakePHP</a></p></li><li><p>Done now You just need to build it …</p></li><li><p>If the build fails make sure you had installed the Channel Package</p></li></ul><pre><code>%global pear_name example
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Creating an RPM package for a PHP PEAR module</title>
+		<meta name="description" content="Ramblings and dumb ideas">
+		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Megh&#39;s Blog">
+		<link rel="alternate" href="/feed/feed.json" type="application/json" title="Megh&#39;s Blog">
+		
+		<style>/* Only include the syntax highlighter CSS on blog posts */
+/**
+ * okaidia theme for JavaScript, CSS and HTML
+ * Loosely based on Monokai textmate theme by http://www.monokai.nl/
+ * @author ocodia
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #f8f8f2;
+	background: none;
+	text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+	border-radius: 0.3em;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #272822;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #8292a2;
+}
+
+.token.punctuation {
+	color: #f8f8f2;
+}
+
+.token.namespace {
+	opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+	color: #f92672;
+}
+
+.token.boolean,
+.token.number {
+	color: #ae81ff;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	color: #a6e22e;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+	color: #f8f8f2;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+	color: #e6db74;
+}
+
+.token.keyword {
+	color: #66d9ef;
+}
+
+.token.regex,
+.token.important {
+	color: #fd971f;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+* { box-sizing: border-box; }
+/* Defaults */
+:root {
+	--font-family: -apple-system, system-ui, sans-serif;
+	--font-family-monospace: Consolas, Menlo, Monaco, Andale Mono WT, Andale Mono,
+		Lucida Console, Lucida Sans Typewriter, DejaVu Sans Mono,
+		Bitstream Vera Sans Mono, Liberation Mono, Nimbus Mono L, Courier New,
+		Courier, monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #c0c0c0;
+	--color-gray-90: #333;
+
+	--background-color: #fff;
+
+	--text-color: var(--color-gray-90);
+	--text-color-link: #082840;
+	--text-color-link-active: #5f2b48;
+	--text-color-link-visited: #17050f;
+
+	--syntax-tab-size: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-gray-20: #e0e0e0;
+		--color-gray-50: #c0c0c0;
+		--color-gray-90: #dad8d8;
+
+		/* --text-color is assigned to --color-gray-_ above */
+		--text-color-link: #1493fb;
+		--text-color-link-active: #6969f7;
+		--text-color-link-visited: #a6a6f8;
+
+		--background-color: #15202b;
+	}
+}
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 50em;
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p {
+	line-height: 1.5;
+}
+
+li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+main {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.links-nextprev {
+	list-style: none;
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+
+table {
+	margin: 1em 0;
+}
+table td,
+table th {
+	padding-right: 1em;
+}
+
+pre,
+code {
+	font-family: var(--font-family-monospace);
+}
+pre:not([class*="language-"]) {
+	background: #272822;
+	padding: 1em;
+	margin: 0.5em 0;
+	overflow: auto;
+	line-height: 1.375; /* 22px /16 */
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+}
+code {
+	word-break: break-all;
+}
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em 0.5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 1em;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: 0.25em;
+	padding-right: 0.5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-transform: capitalize;
+	font-style: italic;
+}
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.post-metadata time {
+	margin-right: 1em;
+}
+
+/* Direct Links / Markdown Headers */
+.header-anchor {
+	text-decoration: none;
+	font-style: normal;
+	font-size: 1em;
+	margin-left: 0.1em;
+}
+a[href].header-anchor,
+a[href].header-anchor:visited {
+	color: transparent;
+}
+a[href].header-anchor:focus,
+a[href].header-anchor:hover {
+	text-decoration: underline;
+}
+a[href].header-anchor:focus,
+:hover > a[href].header-anchor {
+	color: #aaa;
+}
+
+h2 + .header-anchor {
+	font-size: 1.5em;
+}
+
+/* Modified */
+table,
+th,
+td {
+	border: 1px solid;
+	padding: 0.5em;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* Table of Contents */
+#TableOfContents {
+	margin: 1em 0em;
+}
+#TableOfContents ol::before {
+	content: "Table of Contents";
+	font-weight: bold;
+	text-align: center;
+	display: block;
+	margin-left: -1.25em;
+}
+
+#TableOfContents ol {
+	border: 1px dashed var(--color-gray-90);
+	padding: 0.75em 0.75em 0.75em 2em;
+}
+
+#TableOfContents .active {
+	color: var(--text-color-link-active);
+}
+
+@media (min-width: 80em) {
+	#TableOfContents {
+		display: block;
+		width: calc(50vw - 29em);
+		max-width: 20em;
+		position: -webkit-sticky;
+		position: sticky;
+		height: 0;
+		top: 3.5em;
+		margin: 0em;
+		margin-left: 52em;
+		background: none;
+	}
+}
+
+/* Misc */
+.code-play-button {
+	position: relative;
+}
+
+.code-play-button a {
+	position: absolute;
+	text-decoration: none;
+	right: 0em;
+	width: 1.25em;
+	display: inline-block;
+	font-size: 1.5em;
+	color: white;
+	content: "\25B6";
+}</style>
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+
+		<header>
+			<a href="/" class="home-link">Megh&#39;s Blog</a>
+			<nav>
+				<h2 class="visually-hidden">Top level navigation menu</h2>
+				<ul class="nav">
+					<li class="nav-item"><a href="/">Home</a></li>
+					<li class="nav-item"><a href="/archive/">Archive</a></li>
+					<li class="nav-item"><a href="/about/">About Me</a></li>
+					<li class="nav-item"><a href="https://meghprkh.github.io/">Portfolio</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			
+<h1>Creating an RPM package for a PHP PEAR module</h1>
+
+<ul class="post-metadata">
+	<li><time datetime="2014-12-17">17 December 2014</time></li>
+	<li><a href="/tags/fedora/" class="post-tag">Fedora</a>, </li>
+	<li><a href="/tags/packaging/" class="post-tag">Packaging</a></li>
+</ul>
+
+<aside id="TableOfContents">
+  <nav class="toc" >
+        <ol><li><a href="#the-channel-package">The Channel package</a></li><li><a href="#the-pear-package">The PEAR Package</a></li><li><a href="#the-copr-build-system">The Copr Build System</a></li></ol>
+      </nav>
+</aside>
+<p>I am participating in Google Code In 2014 and two of my tasks were based on RPM packaging for Fedora.
+<a href="http://www.google-melange.com/gci/task/view/google/gci2014/5262603731337216">The first</a> was packaging <a href="http://www.phalconphp.com/en/">PhalconPHP</a> for Fedora while <a href="http://www.google-melange.com/gci/task/view/google/gci2014/5774064475963392">the second</a> was packaging <a href="http://cakephp.org/">CakePHP</a>.
+Phalcon is an C extension while Cake is a PEAR/Composer extension.</p>
+<!-- more -->
+<p>I will discuss the easier of the two, Cake as it was a PEAR package.</p>
+<p>So first of all, you need to learn some RPM Packaging Basics. <a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package">This link</a> briefly introduces us to the necessary tools and their setup. But the above link does not introduce us to <a href="http://copr.fedoraproject.org/">Copr</a> which may be used to distribute and even build our RPMS on different platforms (we can use it as a sort of substitute for <a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package#Mock_and_Koji">Koji or Mock</a>).</p>
+<p>Then I recommend that you read [PHP Packaging wiki](<a href="http://fedoraproject.org/wiki/Packaging">http://fedoraproject.org/wiki/Packaging</a>:</p>
+<h2 id="the-channel-package" tabindex="-1">The Channel package <a class="header-anchor" href="#the-channel-package">#</a></h2>
+<p>So lets say we have identified the PEAR channel (<a href="http://pear.example.org">pear.example.org</a>) and it is not the standard PEAR channel. So we need to create a CHANNEL package.</p>
+<p>So lets create the SPEC file :</p>
+<script src="https://gist.github.com/meghprkh/066d9477881f168c77b4.js"></script>
+<p>As you can see you just need to edit a few lines (lines 2,3) to update the channel name and URL and the last lines for proper changelogs.</p>
+<p>Now you can build this spec using the <code>rpmbuild</code> command.</p>
+<p>Install the generated RPM on your system (provided the build is successful).</p>
+<h2 id="the-pear-package" tabindex="-1">The PEAR Package <a class="header-anchor" href="#the-pear-package">#</a></h2>
+<p>Now lets head on to creating the actual SPEC file of the RPM package.</p>
+<ul>
+<li>
+<p>First install the <code>php-pear-PEAR-Command-Packaging</code> package.</p>
+</li>
+<li>
+<p>Download the PEAR package from the channel (mostly <em><a href="http://channelname/get/name-version.tgz">http://channelname/get/name-version.tgz</a></em>)</p>
+</li>
+<li>
+<p>Run <code>pear make-rpm-spec Foo.tgz</code> .</p>
+</li>
+<li>
+<p>and a spec file will be generated for you (with all required files) …</p>
+</li>
+<li>
+<p>… but if it is not from the standard PEAR channel, you will need to add the channel to the requires and modify certain lines …</p>
+</li>
+<li>
+<p>You may look at <a href="https://gist.github.com/meghprkh/39fa65e683f36a4b3996">my spec for CakePHP</a></p>
+</li>
+<li>
+<p>Done now You just need to build it …</p>
+</li>
+<li>
+<p>If the build fails make sure you had installed the Channel Package</p>
+</li>
+</ul>
+<pre><code>%global pear_name example
 %global pear_channel pear.example.org
 URL:            http://%{pear_channel}/package/%{pear_name}
 Source0:        http://%{pear_channel}/get/%{pear_name}-%{version}.tgz
 BuildRequires:  php-channel(%{pear_channel})
 Requires:       php-channel(%{pear_channel})
-</code></pre><h2 id=the-copr-build-system>The Copr Build System</h2><p>Lets say you have Fedora 20 on your system but you also want to build it for other Fedora and EPEL versions and also make the installation simpler for the end user. So the right tool you need to use is the <a href=http://copr.fedoraproject.org/>Copr</a> Build System.</p><ul><li>Upload your SRPMs to some file sharing service which permits direct downloads through a link (I used GitHub but thats a bad habit for git is extremely slow with binary files (SRPMS are gzipped files)).</li><li>Go to the Copr build system page.</li><li>Read their wiki a little.</li><li>Login and create a new repo</li><li>First build the Channel package in your repo</li><li>Drink some coffee. Its gonna take some time.</li><li>Next build the PEAR package (build it after the first completes for it is dependent onthe channel package)</li><li>Share your work.</li><li>You may see my repo for <a href=https://copr.fedoraproject.org/coprs/meghprkh/cakephp/>copy and paste installation instructions</a></li></ul></div><div class=tags>[ Tags:
-<a href=../../tags/fedora>#Fedora</a>
-<a href=../../tags/packaging>#Packaging</a>
-]</div></article><script src=https://utteranc.es/client.js repo=meghprkh/blog issue-term=pathname label=comments theme=github-light crossorigin=anonymous async></script></main><footer><p>&copy; 2022 <a href=http://meghprkh.github.io/blog/>Megh's Blog</a></p></footer><script src=../../js/theme.js></script></body></html>
+</code></pre>
+<h2 id="the-copr-build-system" tabindex="-1">The Copr Build System <a class="header-anchor" href="#the-copr-build-system">#</a></h2>
+<p>Lets say you have Fedora 20 on your system but you also want to build it for other Fedora and EPEL versions and also make the installation simpler for the end user. So the right tool you need to use is the <a href="http://copr.fedoraproject.org/">Copr</a> Build System.</p>
+<ul>
+<li>Upload your SRPMs to some file sharing service which permits direct downloads through a link (I used GitHub but thats a bad habit for git is extremely slow with binary files (SRPMS are gzipped files)).</li>
+<li>Go to the Copr build system page.</li>
+<li>Read their wiki a little.</li>
+<li>Login and create a new repo</li>
+<li>First build the Channel package in your repo</li>
+<li>Drink some coffee. Its gonna take some time.</li>
+<li>Next build the PEAR package (build it after the first completes for it is dependent onthe channel package)</li>
+<li>Share your work.</li>
+<li>You may see my repo for <a href="https://copr.fedoraproject.org/coprs/meghprkh/cakephp/">copy and paste installation instructions</a></li>
+</ul>
+
+<ul class="links-nextprev"><li>Next: <a href="/posts/gsoc-2016-introduction/">GSoC 2016: Introduction</a></li>
+
+<script src="/js/index.js"></script>
+<script src="https://utteranc.es/client.js"
+        repo="meghprkh/blog"
+        issue-term="pathname"
+        label="comments"
+        theme="preferred-color-scheme"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+		</main>
+
+		<footer></footer>
+
+		<!-- Current page: /posts/creating-an-rpm-package-for-a-php-pear-module/ -->
+	</body>
+
+	<script data-goatcounter="https://meghprkh.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+	<noscript>
+		<img src="https://meghprkh.goatcounter.com/count?p=/blog/posts/creating-an-rpm-package-for-a-php-pear-module/?noscript">
+	</noscript>
+</html>
