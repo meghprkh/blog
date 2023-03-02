@@ -47,7 +47,7 @@ int main(int argc, char ** argv) {
 #endif
 
 FORCE_INLINE int decrement(int x) { return x - 1; }
-int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
+FORCE_INLINE int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
 
 int main(int argc, char ** argv) {
     // Executed with args "a b c d e", should return 120 normally
@@ -57,7 +57,9 @@ int main(int argc, char ** argv) {
 
 {% endsetPageVar %}
 
-Function calls are expensive. They require allocating a new stack frame, pushing params calling, return values. And lets not get started on calling conventions. `inline`, `always_inline` and `forceinline` are just hints. They dont always inline [^1] [^2].
+Non-inlined function calls can be expensive. The compiler would not treat the body of the caller and the callee in the same basic block and thus not be able to apply certain optimizations. This is not an issue as the compiler does a pretty good job at inlining mostly, but if you are calling a function in a big loop you might want to ensure that the compiler always inlines it. `inline`, `always_inline` and `forceinline` are just hints. They dont always inline [^1] [^2].
+
+Example of some libraries that do these [mesa](https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/18807), [fastfloat](https://github.com/fastfloat/fast_float/blob/main/include/fast_float/float_common.h#L77-L81)
 
 Trust the compiler some say. Profile your code say the others. Use macros say the old and wise.
 
@@ -91,6 +93,8 @@ It should either compile-time error or link-time error if put it in front of `fa
 #error Unsupported compiler
 #endif
 ```
+
+Note the link-error / clang linker error part is a bit shady and most people would not want to adopt it unless working in somewhat close collaboration. You can remove the `[[gnu::gnu_inline]] extern` part.
 
 Now lets check it in action:
 
