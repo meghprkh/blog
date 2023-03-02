@@ -55,7 +55,7 @@ html {
 	overflow-y: scroll;
 }
 body {
-	max-width: 40em;
+	max-width: 50em;
 }
 
 /* https://www.a11yproject.com/posts/how-to-hide-content/ */
@@ -126,7 +126,10 @@ code {
 	font-family: var(--font-family-monospace);
 }
 pre:not([class*="language-"]) {
+	background: #272822;
+	padding: 1em;
 	margin: 0.5em 0;
+	overflow: auto;
 	line-height: 1.375; /* 22px /16 */
 	-moz-tab-size: var(--syntax-tab-size);
 	-o-tab-size: var(--syntax-tab-size);
@@ -269,4 +272,69 @@ a[href].header-anchor:focus,
 
 h2 + .header-anchor {
 	font-size: 1.5em;
+}
+
+/* Modified */
+table,
+th,
+td {
+	border: 1px solid;
+	padding: 0.5em;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* Table of Contents */
+#TableOfContents {
+	margin: 1em 0em;
+}
+#TableOfContents ol::before {
+	content: "Table of Contents";
+	font-weight: bold;
+	text-align: center;
+	display: block;
+	margin-left: -1.25em;
+}
+
+#TableOfContents ol {
+	border: 1px dashed var(--color-gray-90);
+	padding: 0.75em 0.75em 0.75em 2em;
+}
+
+#TableOfContents .active {
+	color: var(--text-color-link-active);
+}
+
+@media (min-width: 80em) {
+	#TableOfContents {
+		display: block;
+		width: calc(50vw - 29em);
+		max-width: 20em;
+		position: -webkit-sticky;
+		position: sticky;
+		height: 0;
+		top: 3.5em;
+		margin: 0em;
+		margin-left: 52em;
+		background: none;
+	}
+}
+
+/* Misc */
+.code-play-button {
+	position: relative;
+}
+
+.code-play-button a {
+	position: absolute;
+	text-decoration: none;
+	right: 0em;
+	width: 1.25em;
+	display: inline-block;
+	font-size: 1.5em;
+	color: white;
+	content: "\25B6";
 }

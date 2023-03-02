@@ -10,7 +10,7 @@ utterances: |
           repo="meghprkh/blog"
           issue-term="pathname"
           label="comments"
-          theme="github-light"
+          theme="preferred-color-scheme"
           crossorigin="anonymous"
           async>
   </script>

@@ -16,15 +16,28 @@ layout: layouts/base.njk
 	{%- endfor %}
 </ul>
 
+<aside id="TableOfContents">
+  {{ content | toc | safe }}
+</aside>
 {{ content | safe }}
 
 {%- if collections.posts %}
 {%- set previousPost = collections.posts | getPreviousCollectionItem %}
 {%- set nextPost = collections.posts | getNextCollectionItem %}
-{%- if nextPost or previousPost %}
+{%- if nextPost or previousPost or crossposts %}
 <ul class="links-nextprev">
 	{%- if previousPost %}<li>Previous: <a href="{{ previousPost.url }}">{{ previousPost.data.title }}</a></li>{% endif %}
 	{%- if nextPost %}<li>Next: <a href="{{ nextPost.url }}">{{ nextPost.data.title }}</a></li>{% endif %}
+{%- if crossposts %}
+<li>Discuss on:
+{% for site, link in crossposts %}
+&nbsp;<a href="{{ link }}" target="_blank">{{ site }}</a>
+{% endfor %}
+</li>
 </ul>
+{% endif %}
 {%- endif %}
 {%- endif %}
+
+<script src="{{ "/js/index.js" }}"></script>
+{{ metadata.utterances | safe }}
