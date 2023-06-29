@@ -3,6 +3,7 @@ title: Handling joysticks and gamepads in linux
 date: 2016-06-03 22:28:52
 tags: [GNOME, GSoC, Linux, Joystick, Gamepad]
 categories: Opensource
+oldPermalink: /2016/06/03/Handling-joysticks-and-gamepads-in-linux/
 ---
 
 In this post I would share some of the things I came across when dealing with

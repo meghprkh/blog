@@ -3,6 +3,7 @@ title: Adventures with the Meson Build System and a GTK Playground
 date: 2016-07-11 01:00:04
 tags: [GNOME, Meson Build]
 categories: Opensource
+oldPermalink: /2016/07/11/Adventures-with-the-Meson-Build-System-and-a-GTK-Playground/
 ---
 
 This post describes some of my experience with the [Meson Build][1] system. Also I have created a playground for GTK which I use to create simple protoypes with some functionality. The really nice thing about Meson is its _python-ish_/_lua-ish_ syntax. The other thing is that it is _really_ fast.

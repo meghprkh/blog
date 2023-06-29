@@ -2,6 +2,7 @@
 title: GSoC Summary
 date: 2016-08-22 17:11:26
 tags: [GSoC, GNOME]
+oldPermalink: /2016/08/22/GSoC-Summary/
 ---
 
 This post is meant to serve as a summary of work I did during GSoC. You may directly wish to skip to the [links section](#Links)

@@ -3,6 +3,7 @@ title: "GSoC 2016: Introduction"
 date: 2016-05-23 17:49:03
 tags: [GNOME, GSoC]
 categories: Opensource
+oldPermalink: /2016/05/23/GSoC-2016-Introduction/
 ---
 
 Hello everyone, I am participating in Google Summer Of Code 2016 under the GNOME project.

@@ -3,6 +3,7 @@ title: Creating an RPM package for a PHP PEAR module
 date: 2014-12-17 12:19:38
 tags: [Fedora, Packaging]
 categories: Opensource
+oldPermalink: /2014/12/17/Creating-an-RPM-package-for-a-PHP-PEAR-module/
 ---
 
 I am participating in Google Code In 2014 and two of my tasks were based on RPM packaging for Fedora.

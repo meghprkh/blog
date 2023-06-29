@@ -3,6 +3,7 @@ title: The state of gamepad support in Games
 date: 2016-07-22 01:32:16
 tags: [GNOME, GSoC, Gamepad, Games, GNOME Games]
 categories: Opensource
+oldPermalink: /2016/07/22/The-state-of-gamepad-support-in-Games/
 ---
 
 Gamepad support has now been merged into [GNOME Games](https://wiki.gnome.org/Design/Playground/Games) [v3.21.4](https://github.com/Kekun/gnome-games/commit/c110c0390f40821779f2663bde50027b1f9f1acd) !!! This means that you can play your favorite retro games using a gamepad!!!

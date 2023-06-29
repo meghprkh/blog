@@ -3,6 +3,7 @@ title: GSoC - Progress so far
 date: 2016-06-26 18:58:22
 tags: [GNOME, GSoC, Gamepad, Library, Games, GNOME Games]
 categories: Opensource
+oldPermalink: /2016/06/26/GSoC-Progress-so-far/
 ---
 
 My project is about adding gamepad support to GNOME Games. This means that soon you would be able to play your favorite retro games using a gamepad!
