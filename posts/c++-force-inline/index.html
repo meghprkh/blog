@@ -554,10 +554,23 @@ table {
 <p>But what if you are developing a library and need to ensure that your method gets inlined? You cant say trust the compiler, because the users want to trust your library. You cant profile the code, because the application isn't your code.</p>
 <p>We want a <code>FORCE_INLINE</code> keyword that <em>just works</em>, at least on the three major compilers - <code>g++</code>, <code>clang</code> and <code>msvc</code>. If it cant inline, it should error in a meaningful way.</p>
 <p>The example:</p>
-<pre class="language-cpp" tabindex="0"><code class="language-cpp"><span class="token keyword">int</span> <span class="token function">decrement</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token punctuation">}</span><br><span class="token keyword">int</span> <span class="token function">factorial</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> <span class="token punctuation">(</span>x <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> x <span class="token operator">*</span> <span class="token function">factorial</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">}</span></code></pre>
+<pre class="language-cpp" tabindex="0"><code class="language-cpp"><span class="token keyword">int</span> <span class="token function">decrement</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token punctuation">}</span>
+<span class="token keyword">int</span> <span class="token function">factorial</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> <span class="token punctuation">(</span>x <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> x <span class="token operator">*</span> <span class="token function">factorial</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">}</span></code></pre>
 <p>Putting our <code>FORCE_INLINE</code> keyword in front of <code>decrement</code> should inline.</p>
 <p>It should either compile-time error or link-time error if put it in front of <code>factorial</code> (as the recursion depth / input argument is not known at compile-time).</p>
-<pre class="language-text" tabindex="0"><code class="language-text">#if defined(__clang__)<br>#define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline<br><br>#elif defined(__GNUC__)<br>#define FORCE_INLINE [[gnu::always_inline]] inline<br><br>#elif defined(_MSC_VER)<br>#pragma warning(error: 4714)<br>#define FORCE_INLINE __forceinline<br><br>#else<br>#error Unsupported compiler<br>#endif</code></pre>
+<pre class="language-text" tabindex="0"><code class="language-text">#if defined(__clang__)
+#define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
+
+#elif defined(__GNUC__)
+#define FORCE_INLINE [[gnu::always_inline]] inline
+
+#elif defined(_MSC_VER)
+#pragma warning(error: 4714)
+#define FORCE_INLINE __forceinline
+
+#else
+#error Unsupported compiler
+#endif</code></pre>
 <p>Note the link-error / clang linker error part is a bit shady and most people would not want to adopt it unless working in somewhat close collaboration. You can remove the <code>[[gnu::gnu_inline]] extern</code> part.</p>
 <p>Now lets check it in action:</p>
 <table>
