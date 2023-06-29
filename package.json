@@ -1,10 +1,10 @@
 {
-	"name": "eleventy-base-blog",
+	"name": "meghprkh-blog",
+	"private": "true",
 	"version": "8.0.0",
-	"description": "A starter repository for a blog web site using the Eleventy site generator.",
+	"description": "Megh's blog",
 	"scripts": {
 		"build": "npx @11ty/eleventy",
-		"build-ghpages": "npx @11ty/eleventy --pathprefix=/eleventy-base-blog/",
 		"start": "npx @11ty/eleventy --serve --quiet",
 		"debug": "DEBUG=Eleventy* npx @11ty/eleventy",
 		"debugstart": "DEBUG=Eleventy* npx @11ty/eleventy --serve --quiet",
@@ -13,25 +13,12 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git://github.com/11ty/eleventy-base-blog.git"
+		"url": "git://github.com/meghprkh/blog.git"
 	},
-	"author": {
-		"name": "Zach Leatherman",
-		"email": "zachleatherman@gmail.com",
-		"url": "https://zachleat.com/"
-	},
-	"license": "MIT",
 	"engines": {
 		"node": ">=14"
 	},
-	"funding": {
-		"type": "opencollective",
-		"url": "https://opencollective.com/11ty"
-	},
-	"bugs": {
-		"url": "https://github.com/11ty/eleventy-base-blog/issues"
-	},
-	"homepage": "https://github.com/11ty/eleventy-base-blog#readme",
+	"homepage": "https://meghprkh.github.io/blog",
 	"lint-staged": {
 		"**/*": "prettier --write --ignore-unknown"
 	},
