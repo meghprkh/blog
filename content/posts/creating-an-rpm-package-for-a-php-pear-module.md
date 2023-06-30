@@ -24,7 +24,75 @@ So lets say we have identified the PEAR channel (pear.example.org) and it is not
 
 So lets create the SPEC file :
 
-<script src="https://gist.github.com/meghprkh/066d9477881f168c77b4.js"></script>
+```
+%{!?__pear: %{expand: %%global __pear %{_bindir}/pear}}
+%global pear_channel pear.example.org
+%global pear_channel_name example
+Name:           php-channel-%{pear_channel_name}
+# Use REST version
+Version:        1.3
+Release:        1%{?dist}
+Summary:        Adds %{pear_channel_name} channel to PEAR
+
+Group:          Development/Languages
+License:        MIT
+URL:            http://%{pear_channel}
+Source0:        http://%{pear_channel}/channel.xml
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+BuildArch:      noarch
+BuildRequires:  php-pear >= 1:1.4.9-1.2
+Requires:       php-common >= 5.1.4
+Requires:       php-pear(PEAR)
+Requires(post): %{__pear}
+Requires(postun): %{__pear}
+Provides:       php-channel(%{pear_channel})
+
+%description
+This package adds the %{pear_channel_name} channel which allows PEAR packages
+from this channel to be installed.
+
+%prep
+%setup -q -c -T
+
+
+%build
+# Empty build section, nothing to build
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT%{pear_xmldir}
+install -pm 644 %{SOURCE0} $RPM_BUILD_ROOT%{pear_xmldir}/%{name}.xml
+
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%post
+if [ $1 -eq  1 ] ; then
+   %{__pear} channel-add %{pear_xmldir}/%{name}.xml > /dev/null || :
+else
+   %{__pear} channel-update %{pear_xmldir}/%{name}.xml > /dev/null ||:
+fi
+
+
+%postun
+if [ $1 -eq 0 ] ; then
+   %{__pear} channel-delete %{pear_channel} > /dev/null || :
+fi
+
+
+%files
+%defattr(-,root,root,-)
+%{pear_xmldir}/%{name}.xml
+
+
+%changelog
+* Mon Dec 15 2014 Megh Parikh <meghprkh@gmail.com> 1.3-1
+- Initial Release.
+```
 
 As you can see you just need to edit a few lines (lines 2,3) to update the channel name and URL and the last lines for proper changelogs.
 
