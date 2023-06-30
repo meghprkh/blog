@@ -1,7 +1,11 @@
 ---
 layout: layouts/post.njk
+baseUrl: https://meghprkh.github.io/blog
 ---
 
-<meta http-equiv="refresh" content="0; url=/posts/{{page.fileSlug}}/" />
+<meta http-equiv="refresh" content="0; url={{baseUrl}}/posts/{{page.fileSlug}}/" />
 
-Redirecting to new URL...
+<p>
+Redirecting to new URL:<br/>
+<a href="/posts/{{page.fileSlug}}/">{{baseUrl}}/posts/{{page.fileSlug}}/</a>
+</p>
