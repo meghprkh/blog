@@ -6,4 +6,4 @@ https://meghprkh.github.io/blog/
 
 ### Update eleventy-base-blog template
 
-Commit changes from https://github.com/11ty/eleventy-base-blog/compare/4f0a64d78121e358d8c6e9b0bd276045852b75ea...main
+Commit changes from https://github.com/11ty/eleventy-base-blog/compare/231c29b136cd8f97bedf12f5eebb77755d2d43b6...main

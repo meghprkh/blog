@@ -15,6 +15,7 @@ const pluginImages = require("./eleventy.config.images.js");
 
 const registerShortcodes = require("./shortcodes");
 
+/** @param {import('@11ty/eleventy').UserConfig} eleventyConfig */
 module.exports = function (eleventyConfig) {
 	eleventyConfig.addDataExtension("yaml", (contents) => yaml.load(contents));
 
@@ -106,6 +107,10 @@ module.exports = function (eleventyConfig) {
 			slugify: eleventyConfig.getFilter("slugify"),
 		});
 		mdLib.use(markdownItFootnote);
+	});
+
+	eleventyConfig.addShortcode("currentBuildDate", () => {
+		return new Date().toISOString();
 	});
 
 	// Features to make your build faster (when you need them)
