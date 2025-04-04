@@ -15,7 +15,7 @@ eleventyConfig.addFilter(
 	"filterCategory",
 	function filterCategory(posts, category) {
 		return posts.filter(
-			(p) => asArray(p.data.categories).indexOf(category) != -1
+			(p) => asArray(p.data.categories).indexOf(category) != -1,
 		);
-	}
+	},
 );

@@ -6,13 +6,13 @@ function navHighlighter() {
 	if (typeof navHighlighter.headings == "undefined") {
 		// Get all navHighlighter.headings using table of contents
 		navHighlighter.headings = Array.from(
-			document.querySelectorAll("#TableOfContents a")
+			document.querySelectorAll("#TableOfContents a"),
 		).map((a) => document.getElementById(a.href.split("#")[1]));
 	}
 
 	// Now we loop through navHighlighter.headings to find first active header
 	let activeIndex = navHighlighter.headings.findIndex(
-		(current) => current.getBoundingClientRect().top >= 0
+		(current) => current.getBoundingClientRect().top >= 0,
 	);
 	if (!navHighlighter.headings[activeIndex]) {
 		activeIndex = navHighlighter.headings.length - 1;
@@ -29,7 +29,7 @@ function navHighlighter() {
 	if (navHighlighter.headings[activeIndex]) {
 		const sectionId = navHighlighter.headings[activeIndex].getAttribute("id");
 		element = document.querySelector(
-			"#TableOfContents a[href*=" + sectionId + "]"
+			"#TableOfContents a[href*=" + sectionId + "]",
 		);
 	}
 	if (navHighlighter.activeElement != element) {

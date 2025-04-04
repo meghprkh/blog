@@ -1,23 +1,31 @@
-const { DateTime } = require("luxon");
-const markdownItAnchor = require("markdown-it-anchor");
-const markdownItFootnote = require("markdown-it-footnote");
-const yaml = require("js-yaml");
+import process from "node:process";
 
-const pluginRss = require("@11ty/eleventy-plugin-rss");
-const pluginSyntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
-const pluginBundle = require("@11ty/eleventy-plugin-bundle");
-const pluginNavigation = require("@11ty/eleventy-navigation");
-const pluginTOC = require("eleventy-plugin-toc");
-const { EleventyHtmlBasePlugin } = require("@11ty/eleventy");
+import { DateTime } from "luxon";
+import markdownItAnchor from "markdown-it-anchor";
+import markdownItFootnote from "markdown-it-footnote";
+import { load } from "js-yaml";
 
-const pluginDrafts = require("./eleventy.config.drafts.js");
-const pluginImages = require("./eleventy.config.images.js");
+import pluginRss from "@11ty/eleventy-plugin-rss";
+import pluginSyntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
+import pluginBundle from "@11ty/eleventy-plugin-bundle";
+import pluginNavigation from "@11ty/eleventy-navigation";
+import pluginTOC from "eleventy-plugin-toc";
+import { EleventyHtmlBasePlugin } from "@11ty/eleventy";
+import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
 
-const registerShortcodes = require("./shortcodes");
+// import pluginDrafts from "./eleventy.config.drafts.js";
+
+import registerShortcodes from "./shortcodes.js";
 
 /** @param {import('@11ty/eleventy').UserConfig} eleventyConfig */
-module.exports = function (eleventyConfig) {
-	eleventyConfig.addDataExtension("yaml", (contents) => yaml.load(contents));
+export default function (eleventyConfig) {
+	eleventyConfig.addPreprocessor("drafts", "*", (data, _content) => {
+		if (data.draft && process.env.ELEVENTY_RUN_MODE === "build") {
+			return false;
+		}
+	});
+
+	eleventyConfig.addDataExtension("yaml", (contents) => load(contents));
 
 	// Copy the contents of the `public` folder to the output folder
 	// For example, `./public/css/` ends up in `_site/css/`
@@ -32,11 +40,8 @@ module.exports = function (eleventyConfig) {
 	// Watch content images for the image pipeline.
 	eleventyConfig.addWatchTarget("content/**/*.{svg,webp,png,jpeg}");
 
-	// App plugins
-	eleventyConfig.addPlugin(pluginDrafts);
-	eleventyConfig.addPlugin(pluginImages);
-
 	// Official plugins
+	eleventyConfig.addPlugin(eleventyImageTransformPlugin);
 	eleventyConfig.addPlugin(pluginRss);
 	eleventyConfig.addPlugin(pluginSyntaxHighlight, {
 		preAttributes: { tabindex: 0 },
@@ -50,7 +55,7 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.addFilter("readableDate", (dateObj, format, zone) => {
 		// Formatting tokens for Luxon: https://moment.github.io/luxon/#/formatting?id=table-of-tokens
 		return DateTime.fromJSDate(dateObj, { zone: zone || "utc" }).toFormat(
-			format || "dd LLLL yyyy"
+			format || "dd LLLL yyyy",
 		);
 	});
 
@@ -78,8 +83,8 @@ module.exports = function (eleventyConfig) {
 
 	// Return all the tags used in a collection
 	eleventyConfig.addFilter("getAllTags", (collection) => {
-		let tagSet = new Set();
-		for (let item of collection) {
+		const tagSet = new Set();
+		for (const item of collection) {
 			(item.data.tags || []).forEach((tag) => tagSet.add(tag));
 		}
 		return Array.from(tagSet);
@@ -87,7 +92,7 @@ module.exports = function (eleventyConfig) {
 
 	eleventyConfig.addFilter("filterTagList", function filterTagList(tags) {
 		return (tags || []).filter(
-			(tag) => ["all", "nav", "post", "posts"].indexOf(tag) === -1
+			(tag) => ["all", "nav", "post", "posts"].indexOf(tag) === -1,
 		);
 	});
 
@@ -152,4 +157,4 @@ module.exports = function (eleventyConfig) {
 		// folder name and does **not** affect where things go in the output folder.
 		pathPrefix: "/blog/",
 	};
-};
+}

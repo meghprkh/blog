@@ -1,7 +1,7 @@
 const CODE_REGEX = /```([^\n]*)\n((.|\n)*)```/;
 
 function processCode(code, comment_prefix, fragment) {
-	var lines = code.split("\n");
+	const lines = code.split("\n");
 
 	const START = `${comment_prefix} fragment ${fragment}`;
 	const END = `${comment_prefix} endfragment ${fragment}`;
@@ -15,7 +15,7 @@ function processCode(code, comment_prefix, fragment) {
 			}
 			return [fullCode, fragmentCode, slicing];
 		},
-		["", "", !fragment]
+		["", "", !fragment],
 	);
 	return [fullCode.trim(), fragmentCode.trim()];
 }
@@ -32,21 +32,20 @@ function godboltImpl(content, options) {
 		python: "#",
 	};
 	content = options.code || content;
-	var code_match = content.match(CODE_REGEX);
-	var language = options.language || code_match[1];
-	var code = code_match[2];
+	const code_match = content.match(CODE_REGEX);
+	const language = (options.language || code_match[1]).replace("cpp", "c++");
+	const code = code_match[2];
 
-	language = language.replace("cpp", "c++");
-	var prism_language = language.replace("c++", "cpp");
-	var [fullCode, fragmentCode] = processCode(
+	const prism_language = language.replace("c++", "cpp");
+	const [fullCode, fragmentCode] = processCode(
 		code,
 		COMMENT_PREFIX[language] || "//",
-		options.fragment
+		options.fragment,
 	);
 
-	var compiler =
+	const compiler =
 		options.compiler || DEFAUT_COMPILERS[options.compiler_type || language];
-	var session = {
+	const session = {
 		id: 1,
 		language: language,
 		compilers: [
@@ -69,7 +68,7 @@ function godboltImpl(content, options) {
 	};
 	const clientstate_b64 = btoa(JSON.stringify({ sessions: [session] }));
 	const gb_url = `https://godbolt.org/clientstate/${encodeURIComponent(
-		clientstate_b64
+		clientstate_b64,
 	)}`;
 
 	if (options.url_only) return gb_url;
@@ -85,12 +84,12 @@ ${fragmentCode}
     `;
 }
 
-module.exports = function register(eleventyConfig) {
+export default function register(eleventyConfig) {
 	eleventyConfig.addPairedNunjucksShortcode(
 		"godbolt",
 		function (content, options) {
 			return godboltImpl(content, options || {});
-		}
+		},
 	);
 	eleventyConfig.addNunjucksShortcode("godbolt_inline", function (options) {
 		return godboltImpl(undefined, options);
@@ -99,4 +98,4 @@ module.exports = function register(eleventyConfig) {
 		this.page[name] = content;
 		return "";
 	});
-};
+}
