@@ -673,10 +673,13 @@ specifies the Item type is u32:</p>
 <span class="token punctuation">}</span></code></pre>
 <p>This does not seem as useful as traits are intended to be &quot;small / composable&quot;, so if you have multiple associated types, you are likely using all of them or none of them.</p>
 <h2 id="my-mental-model" tabindex="-1">My mental model <a class="header-anchor" href="#my-mental-model">#</a></h2>
-<p>I believe that there is only one real difference between them is the single implementation of a trait constraint.</p>
-<p>For usage, you should treat them as generic traits everywhere. Always specify the associated types. Thus this difference only affects trait implementors.</p>
-<p>(In nightly, there is <code>#![feature(associated_type_defaults)]</code> which affects trait implementors, not users, by providing defaults for associated types.)</p>
-<p>According to me, a slightly more intuitive syntax would be something that consistently enforces associated type specification in usage.</p>
+<ul>
+<li>I believe that there is only one real difference between them is the single implementation of a trait constraint.</li>
+<li>For usage, you should treat them as generic traits everywhere. Always specify the associated types. Thus this difference only affects trait implementors.</li>
+<li>According to me, a slightly more intuitive syntax would be something that consistently enforces associated type specification in usage.</li>
+</ul>
+<details>
+<summary>My unpolished syntax alternative</summary>
 <p>What about something like?</p>
 <pre class="language-rust" tabindex="0"><code class="language-rust"><span class="token keyword">trait</span> <span class="token type-definition class-name">Iterator</span><span class="token operator">&lt;</span><span class="token class-name">Item</span><span class="token operator">></span> <span class="token punctuation">{</span>
 	<span class="token comment">// no type statement, it becomes a generic argument consistenly</span>
@@ -694,6 +697,8 @@ specifies the Item type is u32:</p>
 	require unique implementation <span class="token keyword">for</span> <span class="token operator">&lt;</span><span class="token class-name">BaseUnit</span><span class="token operator">></span>
 <span class="token punctuation">}</span></code></pre>
 <p>(I admit its not great though)</p>
+<p>Aside: In nightly, there is <code>#![feature(associated_type_defaults)]</code> which affects trait implementors, not users, by providing defaults for associated types.</p>
+</details>
 
 <ul class="links-nextprev"><li>Previous: <a href="/blog/posts/c++-force-inline/">Force Inline in C++</a></li>
 
@@ -706,7 +711,7 @@ specifies the Item type is u32:</p>
 
 		<footer></footer>
 
-		<!-- This page `/blog/posts/rust-traits-and-associated-types/` was built on 2025-04-09T02:39:29.194Z -->
+		<!-- This page `/blog/posts/rust-traits-and-associated-types/` was built on 2025-04-09T02:42:54.813Z -->
 	</body>
 
 	<script data-goatcounter="https://meghprkh.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>

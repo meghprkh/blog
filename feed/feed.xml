@@ -139,10 +139,13 @@ specifies the Item type is u32:&lt;/p&gt;
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;This does not seem as useful as traits are intended to be &amp;quot;small / composable&amp;quot;, so if you have multiple associated types, you are likely using all of them or none of them.&lt;/p&gt;
 &lt;h2 id=&quot;my-mental-model&quot; tabindex=&quot;-1&quot;&gt;My mental model &lt;a class=&quot;header-anchor&quot; href=&quot;https://meghprkh.github.io/blog/posts/rust-traits-and-associated-types/#my-mental-model&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;I believe that there is only one real difference between them is the single implementation of a trait constraint.&lt;/p&gt;
-&lt;p&gt;For usage, you should treat them as generic traits everywhere. Always specify the associated types. Thus this difference only affects trait implementors.&lt;/p&gt;
-&lt;p&gt;(In nightly, there is &lt;code&gt;#![feature(associated_type_defaults)]&lt;/code&gt; which affects trait implementors, not users, by providing defaults for associated types.)&lt;/p&gt;
-&lt;p&gt;According to me, a slightly more intuitive syntax would be something that consistently enforces associated type specification in usage.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;I believe that there is only one real difference between them is the single implementation of a trait constraint.&lt;/li&gt;
+&lt;li&gt;For usage, you should treat them as generic traits everywhere. Always specify the associated types. Thus this difference only affects trait implementors.&lt;/li&gt;
+&lt;li&gt;According to me, a slightly more intuitive syntax would be something that consistently enforces associated type specification in usage.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;details&gt;
+&lt;summary&gt;My unpolished syntax alternative&lt;/summary&gt;
 &lt;p&gt;What about something like?&lt;/p&gt;
 &lt;pre class=&quot;language-rust&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-rust&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;trait&lt;/span&gt; &lt;span class=&quot;token type-definition class-name&quot;&gt;Iterator&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;Item&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
 	&lt;span class=&quot;token comment&quot;&gt;// no type statement, it becomes a generic argument consistenly&lt;/span&gt;
@@ -160,6 +163,8 @@ specifies the Item type is u32:&lt;/p&gt;
 	require unique implementation &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;BaseUnit&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;(I admit its not great though)&lt;/p&gt;
+&lt;p&gt;Aside: In nightly, there is &lt;code&gt;#![feature(associated_type_defaults)]&lt;/code&gt; which affects trait implementors, not users, by providing defaults for associated types.&lt;/p&gt;
+&lt;/details&gt;
 </content>
 	</entry>
 	
