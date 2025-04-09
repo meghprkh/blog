@@ -250,13 +250,13 @@ This does not seem as useful as traits are intended to be "small / composable", 
 
 ## My mental model
 
-I believe that there is only one real difference between them is the single implementation of a trait constraint.
+- I believe that there is only one real difference between them is the single implementation of a trait constraint.
+- For usage, you should treat them as generic traits everywhere. Always specify the associated types. Thus this difference only affects trait implementors.
+- According to me, a slightly more intuitive syntax would be something that consistently enforces associated type specification in usage.
 
-For usage, you should treat them as generic traits everywhere. Always specify the associated types. Thus this difference only affects trait implementors.
+<details>
 
-(In nightly, there is `#![feature(associated_type_defaults)]` which affects trait implementors, not users, by providing defaults for associated types.)
-
-According to me, a slightly more intuitive syntax would be something that consistently enforces associated type specification in usage.
+<summary>My unpolished syntax alternative</summary>
 
 What about something like?
 
@@ -279,3 +279,7 @@ trait NDShape<BaseUnit, PerimeterUnit, AreaUnit> {
 ```
 
 (I admit its not great though)
+
+Aside: In nightly, there is `#![feature(associated_type_defaults)]` which affects trait implementors, not users, by providing defaults for associated types.
+
+</details>
