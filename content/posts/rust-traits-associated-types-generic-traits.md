@@ -1,5 +1,5 @@
 ---
-title: Rust Traits and Associated Types
+title: Rust Traits - Associated Types and Generic Traits
 date: 2025-04-05 13:40:20
 tags: [Rust, Traits, Typeclasses]
 enableTOC: true
