@@ -47,92 +47,107 @@
 	</url>
 	
 	<url>
+		<loc>https://meghprkh.github.io/blog/posts/rust-traits-and-associated-types/</loc>
+		<lastmod>2025-04-05</lastmod>
+	</url>
+	
+	<url>
 		<loc>https://meghprkh.github.io/blog/about/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/archive/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/gnome/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/meson-build/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/c/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/rust/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/series-btrait-intro/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/fedora/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/packaging/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/gsoc/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/gamepad/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/library/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/games/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/gnome-games/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/linux/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://meghprkh.github.io/blog/tags/joystick/</loc>
-		<lastmod>2025-04-04</lastmod>
+		<lastmod>2025-04-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://meghprkh.github.io/blog/tags/traits/</loc>
+		<lastmod>2025-04-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://meghprkh.github.io/blog/tags/typeclasses/</loc>
+		<lastmod>2025-04-09</lastmod>
 	</url>
 </urlset>
