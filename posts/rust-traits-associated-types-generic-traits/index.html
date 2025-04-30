@@ -180,10 +180,10 @@ pre[class*="language-diff-"] {
 /* Defaults */
 :root {
 	--font-family: -apple-system, system-ui, sans-serif;
-	--font-family-monospace: Consolas, Menlo, Monaco, Andale Mono WT, Andale Mono,
-		Lucida Console, Lucida Sans Typewriter, DejaVu Sans Mono,
-		Bitstream Vera Sans Mono, Liberation Mono, Nimbus Mono L, Courier New,
-		Courier, monospace;
+	--font-family-monospace:
+		Consolas, Menlo, Monaco, Andale Mono WT, Andale Mono, Lucida Console,
+		Lucida Sans Typewriter, DejaVu Sans Mono, Bitstream Vera Sans Mono,
+		Liberation Mono, Nimbus Mono L, Courier New, Courier, monospace;
 }
 
 /* Theme colors */
@@ -301,8 +301,12 @@ table th {
 }
 
 pre,
-code {
+code,
+code[class*="language-"],
+pre[class*="language-"] {
 	font-family: var(--font-family-monospace);
+	font-size: 0.95em;
+	line-height: 1.5;
 }
 pre:not([class*="language-"]) {
 	background: #272822;
@@ -470,7 +474,7 @@ table {
 #TableOfContents {
 	margin: 1em 0em;
 }
-#TableOfContents ol::before {
+#TableOfContents > nav > ol::before {
 	content: "Table of Contents";
 	font-weight: bold;
 	text-align: center;
@@ -478,7 +482,7 @@ table {
 	margin-left: -1.25em;
 }
 
-#TableOfContents ol {
+#TableOfContents > nav > ol {
 	border: 1px dashed var(--color-gray-90);
 	padding: 0.75em 0.75em 0.75em 2em;
 }
@@ -700,7 +704,7 @@ specifies the Item type is u32:</p>
 <p>Aside: In nightly, there is <code>#![feature(associated_type_defaults)]</code> which affects trait implementors, not users, by providing defaults for associated types.</p>
 </details>
 
-<ul class="links-nextprev"><li>Previous: <a href="/blog/posts/c++-force-inline/">Force Inline in C++</a></li>
+<ul class="links-nextprev"><li>Previous: <a href="/blog/posts/c++-force-inline/">Force Inline in C++</a></li><li>Next: <a href="/blog/posts/crabtime-leptos-icons/">Using Crabtime for including icons in Leptos</a></li>
 
 <script src="/blog/js/index.js"></script>
 <script src="https://utteranc.es/client.js" repo="meghprkh/blog" issue-term="pathname" label="comments" theme="preferred-color-scheme" crossorigin="anonymous" async="">
@@ -711,7 +715,7 @@ specifies the Item type is u32:</p>
 
 		<footer></footer>
 
-		<!-- This page `/blog/posts/rust-traits-associated-types-generic-traits/` was built on 2025-04-09T02:45:18.541Z -->
+		<!-- This page `/blog/posts/rust-traits-associated-types-generic-traits/` was built on 2025-04-30T06:22:10.273Z -->
 	</body>
 
 	<script data-goatcounter="https://meghprkh.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>
