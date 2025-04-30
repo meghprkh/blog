@@ -1,5 +1,5 @@
 ---
-title: Using Crabtime for including icons in Leptos
+title: Creating Rust macros via crabtime for including icons in Leptos
 date: 2025-04-30 00:15:07
 tags: [Rust, Leptos, crabtime]
 # Dont use nunjucks / substitute {{str}} for this file
@@ -8,13 +8,13 @@ templateEngineOverride: md
 
 TLDR: Using [`crabtime`][crabtime] to easily embed icons in [Leptos][leptos] like how you would do it in ReactJS 🦀🦀
 
-Web development in Rust is exciting. While exploring Leptos, I ran into issues adding icons — but managed to solve them using `crabtime`.
+Web development in Rust is exciting. While exploring Leptos, I ran into issues adding icons — but managed to solve them using `crabtime`. This posts shows its Zig-like compile-time power.
 
 <!-- more -->
 
-Icon fonts like FontAwesome are outdated; embedding SVGs wiht includes directly is now preferred. Libraries like [Lucide][lucide] use Javascript for this, and Rust ports like [`leptos_lucide`][leptos_lucide] & [`lucide-leptos`][lucide-leptos] offer similar functionality. This gives you tree shaking, only including the icons you need. Other things like `currentColor`, `size`, etc work too. However generating a component per icon, for 2000+ icons, compile times skyrocket.
+Icon fonts like FontAwesome are outdated; embedding SVGs with includes directly is now preferred. Libraries like [Lucide][lucide] use Javascript for this, and Rust ports like [`leptos_lucide`][leptos_lucide] & [`lucide-leptos`][lucide-leptos] offer similar functionality. This gives you tree shaking, only including the icons you need. Other things like `currentColor`, `size`, etc work too. However generating a component per icon, for 2000+ icons, compile times skyrocket.
 
-I used `crabtime`, which gives Zig-like compile time functions, to easily create macros. The idea then is to explictly define what icons we want to use in the project and only pay compile time costs for them.
+The idea is to define a macro for defining an "icon component" and then explictly list the icons we may want to use in the project and only pay compile time costs for them.
 
 ## The `raw_icon_content!` macro
 
