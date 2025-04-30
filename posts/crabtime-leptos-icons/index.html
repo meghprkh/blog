@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Using Crabtime for including icons in Leptos</title>
+		<title>Creating Rust macros via crabtime for including icons in Leptos</title>
 		<meta name="description" content="Ramblings and dumb ideas">
 		<link rel="alternate" href="/blog/feed/feed.xml" type="application/atom+xml" title="Megh&#39;s Blog">
 		<link rel="alternate" href="/blog/feed/feed.json" type="application/json" title="Megh&#39;s Blog">
@@ -540,7 +540,7 @@ table {
 
 		<main id="skip">
 			
-<h1>Using Crabtime for including icons in Leptos</h1>
+<h1>Creating Rust macros via crabtime for including icons in Leptos</h1>
 
 <ul class="post-metadata">
 	<li><time datetime="2025-04-30">30 April 2025</time></li>
@@ -555,10 +555,10 @@ table {
       </nav>
 </aside>
 <p>TLDR: Using <a href="https://docs.rs/crabtime/latest/crabtime/"><code>crabtime</code></a> to easily embed icons in <a href="https://leptos.dev/">Leptos</a> like how you would do it in ReactJS 🦀🦀</p>
-<p>Web development in Rust is exciting. While exploring Leptos, I ran into issues adding icons — but managed to solve them using <code>crabtime</code>.</p>
+<p>Web development in Rust is exciting. While exploring Leptos, I ran into issues adding icons — but managed to solve them using <code>crabtime</code>. This posts shows its Zig-like compile-time power.</p>
 <!-- more -->
-<p>Icon fonts like FontAwesome are outdated; embedding SVGs wiht includes directly is now preferred. Libraries like <a href="https://lucide.dev/">Lucide</a> use Javascript for this, and Rust ports like <a href="https://github.com/opensourcecheemsburgers/leptos_lucide/"><code>leptos_lucide</code></a> &amp; <a href="https://lucide.rustforweb.org/frameworks/leptos.html"><code>lucide-leptos</code></a> offer similar functionality. This gives you tree shaking, only including the icons you need. Other things like <code>currentColor</code>, <code>size</code>, etc work too. However generating a component per icon, for 2000+ icons, compile times skyrocket.</p>
-<p>I used <code>crabtime</code>, which gives Zig-like compile time functions, to easily create macros. The idea then is to explictly define what icons we want to use in the project and only pay compile time costs for them.</p>
+<p>Icon fonts like FontAwesome are outdated; embedding SVGs with includes directly is now preferred. Libraries like <a href="https://lucide.dev/">Lucide</a> use Javascript for this, and Rust ports like <a href="https://github.com/opensourcecheemsburgers/leptos_lucide/"><code>leptos_lucide</code></a> &amp; <a href="https://lucide.rustforweb.org/frameworks/leptos.html"><code>lucide-leptos</code></a> offer similar functionality. This gives you tree shaking, only including the icons you need. Other things like <code>currentColor</code>, <code>size</code>, etc work too. However generating a component per icon, for 2000+ icons, compile times skyrocket.</p>
+<p>The idea is to define a macro for defining an &quot;icon component&quot; and then explictly list the icons we may want to use in the project and only pay compile time costs for them.</p>
 <h2 id="the-raw-icon-content-macro" tabindex="-1">The <code>raw_icon_content!</code> macro <a class="header-anchor" href="#the-raw-icon-content-macro">#</a></h2>
 <p>First lets create a small macro to include and escape the content of a macro. This is very similar to <a href="https://doc.rust-lang.org/std/macro.include_str.html#examples">std::include_str!</a> but shows basic crabtime usage and assumes paths for our icons.</p>
 <pre class="language-rust" tabindex="0"><code class="language-rust"><span class="token attribute attr-name">#[crabtime::expression]</span>
@@ -733,7 +733,7 @@ table {
 
 		<footer></footer>
 
-		<!-- This page `/blog/posts/crabtime-leptos-icons/` was built on 2025-04-30T06:22:10.270Z -->
+		<!-- This page `/blog/posts/crabtime-leptos-icons/` was built on 2025-04-30T22:14:41.414Z -->
 	</body>
 
 	<script data-goatcounter="https://meghprkh.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>

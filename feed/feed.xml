@@ -12,15 +12,15 @@
 	</author>
 	
 	<entry>
-		<title>Using Crabtime for including icons in Leptos</title>
+		<title>Creating Rust macros via crabtime for including icons in Leptos</title>
 		<link href="https://meghprkh.github.io/blog/posts/crabtime-leptos-icons/"/>
 		<updated>2025-04-30T00:15:07Z</updated>
 		<id>https://meghprkh.github.io/blog/posts/crabtime-leptos-icons/</id>
 		<content type="html">&lt;p&gt;TLDR: Using &lt;a href=&quot;https://docs.rs/crabtime/latest/crabtime/&quot;&gt;&lt;code&gt;crabtime&lt;/code&gt;&lt;/a&gt; to easily embed icons in &lt;a href=&quot;https://leptos.dev/&quot;&gt;Leptos&lt;/a&gt; like how you would do it in ReactJS 🦀🦀&lt;/p&gt;
-&lt;p&gt;Web development in Rust is exciting. While exploring Leptos, I ran into issues adding icons — but managed to solve them using &lt;code&gt;crabtime&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Web development in Rust is exciting. While exploring Leptos, I ran into issues adding icons — but managed to solve them using &lt;code&gt;crabtime&lt;/code&gt;. This posts shows its Zig-like compile-time power.&lt;/p&gt;
 &lt;!-- more --&gt;
-&lt;p&gt;Icon fonts like FontAwesome are outdated; embedding SVGs wiht includes directly is now preferred. Libraries like &lt;a href=&quot;https://lucide.dev/&quot;&gt;Lucide&lt;/a&gt; use Javascript for this, and Rust ports like &lt;a href=&quot;https://github.com/opensourcecheemsburgers/leptos_lucide/&quot;&gt;&lt;code&gt;leptos_lucide&lt;/code&gt;&lt;/a&gt; &amp;amp; &lt;a href=&quot;https://lucide.rustforweb.org/frameworks/leptos.html&quot;&gt;&lt;code&gt;lucide-leptos&lt;/code&gt;&lt;/a&gt; offer similar functionality. This gives you tree shaking, only including the icons you need. Other things like &lt;code&gt;currentColor&lt;/code&gt;, &lt;code&gt;size&lt;/code&gt;, etc work too. However generating a component per icon, for 2000+ icons, compile times skyrocket.&lt;/p&gt;
-&lt;p&gt;I used &lt;code&gt;crabtime&lt;/code&gt;, which gives Zig-like compile time functions, to easily create macros. The idea then is to explictly define what icons we want to use in the project and only pay compile time costs for them.&lt;/p&gt;
+&lt;p&gt;Icon fonts like FontAwesome are outdated; embedding SVGs with includes directly is now preferred. Libraries like &lt;a href=&quot;https://lucide.dev/&quot;&gt;Lucide&lt;/a&gt; use Javascript for this, and Rust ports like &lt;a href=&quot;https://github.com/opensourcecheemsburgers/leptos_lucide/&quot;&gt;&lt;code&gt;leptos_lucide&lt;/code&gt;&lt;/a&gt; &amp;amp; &lt;a href=&quot;https://lucide.rustforweb.org/frameworks/leptos.html&quot;&gt;&lt;code&gt;lucide-leptos&lt;/code&gt;&lt;/a&gt; offer similar functionality. This gives you tree shaking, only including the icons you need. Other things like &lt;code&gt;currentColor&lt;/code&gt;, &lt;code&gt;size&lt;/code&gt;, etc work too. However generating a component per icon, for 2000+ icons, compile times skyrocket.&lt;/p&gt;
+&lt;p&gt;The idea is to define a macro for defining an &amp;quot;icon component&amp;quot; and then explictly list the icons we may want to use in the project and only pay compile time costs for them.&lt;/p&gt;
 &lt;h2 id=&quot;the-raw-icon-content-macro&quot; tabindex=&quot;-1&quot;&gt;The &lt;code&gt;raw_icon_content!&lt;/code&gt; macro &lt;a class=&quot;header-anchor&quot; href=&quot;https://meghprkh.github.io/blog/posts/crabtime-leptos-icons/#the-raw-icon-content-macro&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;First lets create a small macro to include and escape the content of a macro. This is very similar to &lt;a href=&quot;https://doc.rust-lang.org/std/macro.include_str.html#examples&quot;&gt;std::include_str!&lt;/a&gt; but shows basic crabtime usage and assumes paths for our icons.&lt;/p&gt;
 &lt;pre class=&quot;language-rust&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-rust&quot;&gt;&lt;span class=&quot;token attribute attr-name&quot;&gt;#[crabtime::expression]&lt;/span&gt;
