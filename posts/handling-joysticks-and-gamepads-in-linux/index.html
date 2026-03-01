@@ -520,7 +520,14 @@ table {
 	font-size: 1.5em;
 	color: white;
 	content: "\25B6";
+}
+
+math {
+	font-size: 120%;
+	line-height: 120%;
 }</style>
+		<link rel="stylesheet" href="https://fred-wang.github.io/MathFonts/LatinModern/mathfonts.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mathup@1.0.0/dist/mathup.css">
 	</head>
 	<body>
 		<a href="#skip" class="visually-hidden">Skip to main content</a>
@@ -559,9 +566,11 @@ table {
 <p>In this post I would share some of the things I came across when dealing with
 the handling of joysticks and gamepads in Linux. One of the goals I wanted to
 achieve was to make our controller mappings compatible with the SDL ones so that
-we can reuse the community maintained controller mapping database that they have.</p>
+we can reuse the community maintained controller mapping database that they
+have.</p>
 <!--more-->
-<p>The full code can be found <a href="https://gist.github.com/meghprkh/9cdce0cd4e0f41ce93413b250a207a55">here</a>.</p>
+<p>The full code can be found
+<a href="https://gist.github.com/meghprkh/9cdce0cd4e0f41ce93413b250a207a55">here</a>.</p>
 <p>The first thing that I want to clarify is that Linux provides <em>two</em> APIs for
 dealing with joysticks. One is the legacy <em>joystick</em> API and the other is the
 modern <em>evdev</em> API. The evdev-based API provides more detailed information about
@@ -576,22 +585,27 @@ and keyboards). Symbolic links to those devices are also available in
 has names ending with -joystick while the 'evdev' have names ending with
 <code>-event-joystick</code>.</p>
 </blockquote>
-<p>For using the evdev API, I decided to use the libevdev library instead of using traditional <code>ioctl</code> calls as this library provided simpler higher-level access to the evdev API.</p>
-<p>Moving on to our main goal: we want to reuse the SDL mappings. The SDL mappings look something like these:</p>
+<p>For using the evdev API, I decided to use the libevdev library instead of using
+traditional <code>ioctl</code> calls as this library provided simpler higher-level access
+to the evdev API.</p>
+<p>Moving on to our main goal: we want to reuse the SDL mappings. The SDL mappings
+look something like these:</p>
 <pre><code>&quot;guid,name,mappings&quot;
 &quot;030000006d0400001dc2000014400000,Logitech F310 Gamepad (XInput),a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,&quot;
 </code></pre>
 <p>Quoting SDL documentation:</p>
 <blockquote>
-<p>The mapping format for joystick is:
-bX - a joystick button, index X
-hX.Y - hat X with value Y
-aX - axis X of the joystick
-Buttons can be used as a controller axis and vice versa.</p>
+<p>The mapping format for joystick is: bX - a joystick button, index X hX.Y - hat
+X with value Y aX - axis X of the joystick Buttons can be used as a controller
+axis and vice versa.</p>
 </blockquote>
-<p>In this post we will assume that we will handle the parsing of this mapping and only need to get the indexes correctly (like <code>b0</code>, <code>a2</code>, etc.)</p>
+<p>In this post we will assume that we will handle the parsing of this mapping and
+only need to get the indexes correctly (like <code>b0</code>, <code>a2</code>, etc.)</p>
 <h2 id="generating-guid" tabindex="-1">Generating GUID <a class="header-anchor" href="#generating-guid">#</a></h2>
-<p>So the first problem was to decipher how the GUID was generated. The GUID is an 128-bit code that is time and device independent. Its constructed using the bustype, vendor, product and version of the device. It is generated using the following code:</p>
+<p>So the first problem was to decipher how the GUID was generated. The GUID is an
+128-bit code that is time and device independent. Its constructed using the
+bustype, vendor, product and version of the device. It is generated using the
+following code:</p>
 <pre class="language-c" tabindex="0"><code class="language-c"><span class="token keyword">void</span> <span class="token function">get_guid</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">libevdev</span> <span class="token operator">*</span> dev<span class="token punctuation">,</span> guint16 <span class="token operator">*</span> guid<span class="token punctuation">)</span> <span class="token punctuation">{</span>
     guid<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">GINT16_TO_LE</span><span class="token punctuation">(</span><span class="token function">libevdev_get_id_bustype</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     guid<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
@@ -602,8 +616,10 @@ Buttons can be used as a controller axis and vice versa.</p>
     guid<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">GINT16_TO_LE</span><span class="token punctuation">(</span><span class="token function">libevdev_get_id_version</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     guid<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span></code></pre>
-<p>As we want it to be device independent, we use the <code>GINT16_TO_LE</code> helper from glib to convert a 16 bit number to little endian.</p>
-<p>But to convert this to string we convert it to its hexadecimal equivalent using the following simple code:</p>
+<p>As we want it to be device independent, we use the <code>GINT16_TO_LE</code> helper from
+glib to convert a 16 bit number to little endian.</p>
+<p>But to convert this to string we convert it to its hexadecimal equivalent using
+the following simple code:</p>
 <pre class="language-c" tabindex="0"><code class="language-c"><span class="token keyword">void</span> <span class="token function">guid_to_string</span><span class="token punctuation">(</span>guint16 <span class="token operator">*</span> guid<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span> guidstr<span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token keyword">static</span> <span class="token keyword">const</span> <span class="token keyword">char</span> k_rgchHexToASCII<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"0123456789abcdef"</span><span class="token punctuation">;</span>
     <span class="token keyword">int</span> i<span class="token punctuation">;</span>
@@ -620,7 +636,12 @@ Buttons can be used as a controller axis and vice versa.</p>
     <span class="token operator">*</span>guidstr <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span></code></pre>
 <h2 id="feature-detection-and-mapping-to-the-sdl-indexes" tabindex="-1">Feature Detection and mapping to the SDL indexes <a class="header-anchor" href="#feature-detection-and-mapping-to-the-sdl-indexes">#</a></h2>
-<p>Now coming to the feature detection part. We use the helper <code>libevdev_has_event_code (dev, type, code)</code> to detect if the device has a button/axis/hat. This way we loop over the possible values of the code for each type (<code>EV_KEY</code> for button, <code>EV_ABS</code> for axes and hat) and map it to an increasing number. That is the first valid axis code we found is <code>axis0</code> or <code>a0</code>, the second valid axis is <code>a1</code> and so on. It is the same for buttons.</p>
+<p>Now coming to the feature detection part. We use the helper
+<code>libevdev_has_event_code (dev, type, code)</code> to detect if the device has a
+button/axis/hat. This way we loop over the possible values of the code for each
+type (<code>EV_KEY</code> for button, <code>EV_ABS</code> for axes and hat) and map it to an
+increasing number. That is the first valid axis code we found is <code>axis0</code> or
+<code>a0</code>, the second valid axis is <code>a1</code> and so on. It is the same for buttons.</p>
 <p>For example, following is part of the code for buttons:</p>
 <pre class="language-c" tabindex="0"><code class="language-c"><span class="token keyword">int</span> nbuttons <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
 guint8 key_map<span class="token punctuation">[</span>KEY_MAX<span class="token punctuation">]</span><span class="token punctuation">;</span>
@@ -634,11 +655,25 @@ guint8 key_map<span class="token punctuation">[</span>KEY_MAX<span class="token 
 <span class="token punctuation">}</span></code></pre>
 <p>And while polling we find the button number through this <code>key_map</code>:</p>
 <pre class="language-c" tabindex="0"><code class="language-c"><span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Button %d\n"</span><span class="token punctuation">,</span> key_map<span class="token punctuation">[</span>ev<span class="token punctuation">.</span>code <span class="token operator">-</span> BTN_MISC<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
-<p>We do similar stuff for axes and hats even though the way we map changes. The hats mapping like <code>h0.4</code> can be done using a simple map from code and value. But SDL returns output as a 8-way dpad giving one of the eight values (like up, leftup, etc.) while evdev gives hat as two axes and reports two events: left and up on pressing the dpad/hat in the leftup direction.</p>
+<p>We do similar stuff for axes and hats even though the way we map changes. The
+hats mapping like <code>h0.4</code> can be done using a simple map from code and value. But
+SDL returns output as a 8-way dpad giving one of the eight values (like up,
+leftup, etc.) while evdev gives hat as two axes and reports two events: left and
+up on pressing the dpad/hat in the leftup direction.</p>
 <h2 id="conclusion" tabindex="-1">Conclusion <a class="header-anchor" href="#conclusion">#</a></h2>
-<p>For polling events we use the <code>libevdev_next_event</code> function. The full <strong>libevdev documentation</strong> can be found <a href="https://www.freedesktop.org/software/libevdev/doc/latest/">here</a></p>
-<p>The <strong>full code</strong> can be found <a href="https://gist.github.com/meghprkh/9cdce0cd4e0f41ce93413b250a207a55">here</a>. While this code uses glib, it only uses simple helper functions from glib which can be easily reimplemented. The only complex glib functions used are to detect the event-joystick device from the <code>/dev/input/by-path</code> folder. This code also doesnot have several fallbacks that the SDL code has.</p>
-<p>My future work will involve the integration of this 'playground' code into the main GNOME Games code and also parsing the mapping. Other things that need to be done is to handle hats properly, handle fallbacks and see if we want to detect joystick devices by polling only or use udev.</p>
+<p>For polling events we use the <code>libevdev_next_event</code> function. The full
+<strong>libevdev documentation</strong> can be found
+<a href="https://www.freedesktop.org/software/libevdev/doc/latest/">here</a></p>
+<p>The <strong>full code</strong> can be found
+<a href="https://gist.github.com/meghprkh/9cdce0cd4e0f41ce93413b250a207a55">here</a>. While
+this code uses glib, it only uses simple helper functions from glib which can be
+easily reimplemented. The only complex glib functions used are to detect the
+event-joystick device from the <code>/dev/input/by-path</code> folder. This code also
+doesnot have several fallbacks that the SDL code has.</p>
+<p>My future work will involve the integration of this 'playground' code into the
+main GNOME Games code and also parsing the mapping. Other things that need to be
+done is to handle hats properly, handle fallbacks and see if we want to detect
+joystick devices by polling only or use udev.</p>
 
 <ul class="links-nextprev"><li>Previous: <a href="/blog/posts/gsoc-2016-introduction/">GSoC 2016: Introduction</a></li><li>Next: <a href="/blog/posts/gsoc-progress-so-far/">GSoC - Progress so far</a></li>
 
@@ -651,7 +686,7 @@ guint8 key_map<span class="token punctuation">[</span>KEY_MAX<span class="token 
 
 		<footer></footer>
 
-		<!-- This page `/blog/posts/handling-joysticks-and-gamepads-in-linux/` was built on 2025-04-30T22:14:41.416Z -->
+		<!-- This page `/blog/posts/handling-joysticks-and-gamepads-in-linux/` was built on 2026-03-01T22:49:43.539Z -->
 	</body>
 
 	<script data-goatcounter="https://meghprkh.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>

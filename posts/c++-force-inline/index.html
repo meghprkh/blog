@@ -520,7 +520,14 @@ table {
 	font-size: 1.5em;
 	color: white;
 	content: "\25B6";
+}
+
+math {
+	font-size: 120%;
+	line-height: 120%;
 }</style>
+		<link rel="stylesheet" href="https://fred-wang.github.io/MathFonts/LatinModern/mathfonts.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mathup@1.0.0/dist/mathup.css">
 	</head>
 	<body>
 		<a href="#skip" class="visually-hidden">Skip to main content</a>
@@ -550,16 +557,32 @@ table {
 <aside id="TableOfContents">
   
 </aside>
-<p>Non-inlined function calls can be expensive. The compiler would not treat the body of the caller and the callee in the same basic block and thus not be able to apply certain optimizations. This is not an issue as the compiler does a pretty good job at inlining mostly, but if you are calling a function in a big loop you might want to ensure that the compiler always inlines it. <code>inline</code>, <code>always_inline</code> and <code>forceinline</code> are just hints. They dont always inline <sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup> <sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>.</p>
-<p>Example of some libraries that do these <a href="https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/18807">mesa</a>, <a href="https://github.com/fastfloat/fast_float/blob/main/include/fast_float/float_common.h#L77-L81">fastfloat</a></p>
-<p>Trust the compiler some say. Profile your code say the others. Use macros say the old and wise.</p>
-<p>But what if you are developing a library and need to ensure that your method gets inlined? You cant say trust the compiler, because the users want to trust your library. You cant profile the code, because the application isn't your code.</p>
-<p>We want a <code>FORCE_INLINE</code> keyword that <em>just works</em>, at least on the three major compilers - <code>g++</code>, <code>clang</code> and <code>msvc</code>. If it cant inline, it should error in a meaningful way.</p>
+<p>Non-inlined function calls can be expensive. The compiler would not treat the
+body of the caller and the callee in the same basic block and thus not be able
+to apply certain optimizations. This is not an issue as the compiler does a
+pretty good job at inlining mostly, but if you are calling a function in a big
+loop you might want to ensure that the compiler always inlines it. <code>inline</code>,
+<code>always_inline</code> and <code>forceinline</code> are just hints. They dont always inline <sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>
+<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>.</p>
+<p>Example of some libraries that do these
+<a href="https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/18807">mesa</a>,
+<a href="https://github.com/fastfloat/fast_float/blob/main/include/fast_float/float_common.h#L77-L81">fastfloat</a></p>
+<p>Trust the compiler some say. Profile your code say the others. Use macros say
+the old and wise.</p>
+<p>But what if you are developing a library and need to ensure that your method
+gets inlined? You cant say trust the compiler, because the users want to trust
+your library. You cant profile the code, because the application isn't your
+code.</p>
+<p>We want a <code>FORCE_INLINE</code> keyword that <em>just works</em>, at least on the three major
+compilers - <code>g++</code>, <code>clang</code> and <code>msvc</code>. If it cant inline, it should error in a
+meaningful way.</p>
 <p>The example:</p>
 <pre class="language-cpp" tabindex="0"><code class="language-cpp"><span class="token keyword">int</span> <span class="token function">decrement</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token punctuation">}</span>
 <span class="token keyword">int</span> <span class="token function">factorial</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> <span class="token punctuation">(</span>x <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> x <span class="token operator">*</span> <span class="token function">factorial</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">}</span></code></pre>
 <p>Putting our <code>FORCE_INLINE</code> keyword in front of <code>decrement</code> should inline.</p>
-<p>It should either compile-time error or link-time error if put it in front of <code>factorial</code> (as the recursion depth / input argument is not known at compile-time).</p>
+<p>It should either compile-time error or link-time error if put it in front of
+<code>factorial</code> (as the recursion depth / input argument is not known at
+compile-time).</p>
 <pre class="language-text" tabindex="0"><code class="language-text">#if defined(__clang__)
 #define FORCE_INLINE [[gnu::always_inline]] [[gnu::gnu_inline]] extern inline
 
@@ -573,7 +596,9 @@ table {
 #else
 #error Unsupported compiler
 #endif</code></pre>
-<p>Note the link-error / clang linker error part is a bit shady and most people would not want to adopt it unless working in somewhat close collaboration. You can remove the <code>[[gnu::gnu_inline]] extern</code> part.</p>
+<p>Note the link-error / clang linker error part is a bit shady and most people
+would not want to adopt it unless working in somewhat close collaboration. You
+can remove the <code>[[gnu::gnu_inline]] extern</code> part.</p>
 <p>Now lets check it in action:</p>
 <table>
 <thead>
@@ -611,22 +636,28 @@ table {
 <li>Clang:
 <ul>
 <li>Does not generate an error for non-inlinable <code>always_inline</code> functions. <sup class="footnote-ref"><a href="#fn1" id="fnref1:1">[1:1]</a></sup></li>
-<li>Instead <code>gnu_inline</code> and <code>extern inline</code> forces it to not generate any code for the function <sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup> <sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup></li>
+<li>Instead <code>gnu_inline</code> and <code>extern inline</code> forces it to not generate any code
+for the function <sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup> <sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup></li>
 <li>Thus give a linker error if it is not inlined</li>
 </ul>
 </li>
 <li>MSVC:
 <ul>
 <li>Generates a warning for for non-inlinable <code>__forceinline</code> functions</li>
-<li>But only if compiled with any &quot;inline expansion&quot; optimization (<code>/Ob&lt;n&gt;</code>) <sup class="footnote-ref"><a href="#fn2" id="fnref2:1">[2:1]</a></sup></li>
+<li>But only if compiled with any &quot;inline expansion&quot; optimization (<code>/Ob&lt;n&gt;</code>)
+<sup class="footnote-ref"><a href="#fn2" id="fnref2:1">[2:1]</a></sup></li>
 <li>This is present with <code>/O1</code> or <code>/O2</code></li>
 <li>We promote this warning to an error</li>
 </ul>
 </li>
 </ul>
-<p><strong>Note</strong>: do not use this with virtual functions. You can't &quot;force inline&quot; them as they need to be pointed to at runtime.</p>
-<p>GCC summarizes this as &quot;An Inline Function is As Fast As a Macro&quot; <sup class="footnote-ref"><a href="#fn5" id="fnref5:1">[5:1]</a></sup>. Zig provides something similar as its <a href="https://ziglang.org/documentation/0.9.1/#Functions"><code>callconv(.Inline)</code></a></p>
-<p>Thus we can and should build syntactic sugar as functions instead of weird macros. Without any worries of performance.</p>
+<p><strong>Note</strong>: do not use this with virtual functions. You can't &quot;force inline&quot; them
+as they need to be pointed to at runtime.</p>
+<p>GCC summarizes this as &quot;An Inline Function is As Fast As a Macro&quot; <sup class="footnote-ref"><a href="#fn5" id="fnref5:1">[5:1]</a></sup>. Zig
+provides something similar as its
+<a href="https://ziglang.org/documentation/0.9.1/#Functions"><code>callconv(.Inline)</code></a></p>
+<p>Thus we can and should build syntactic sugar as functions instead of weird
+macros. Without any worries of performance.</p>
 <hr class="footnotes-sep">
 <section class="footnotes">
 <ol class="footnotes-list">
@@ -661,7 +692,7 @@ table {
 
 		<footer></footer>
 
-		<!-- This page `/blog/posts/c++-force-inline/` was built on 2025-04-30T22:14:41.413Z -->
+		<!-- This page `/blog/posts/c++-force-inline/` was built on 2026-03-01T22:49:43.537Z -->
 	</body>
 
 	<script data-goatcounter="https://meghprkh.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>

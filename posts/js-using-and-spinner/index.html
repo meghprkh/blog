@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Javascript&#39;s using statement &amp; a spinner using aria-busy</title>
+		<meta name="description" content="Ramblings and dumb ideas">
+		<link rel="alternate" href="/blog/feed/feed.xml" type="application/atom+xml" title="Megh&#39;s Blog">
+		<link rel="alternate" href="/blog/feed/feed.json" type="application/json" title="Megh&#39;s Blog">
+		
+		<style>/**
+ * okaidia theme for JavaScript, CSS and HTML
+ * Loosely based on Monokai textmate theme by http://www.monokai.nl/
+ * @author ocodia
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #f8f8f2;
+	background: none;
+	text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+	border-radius: 0.3em;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #272822;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #8292a2;
+}
+
+.token.punctuation {
+	color: #f8f8f2;
+}
+
+.token.namespace {
+	opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+	color: #f92672;
+}
+
+.token.boolean,
+.token.number {
+	color: #ae81ff;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	color: #a6e22e;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+	color: #f8f8f2;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+	color: #e6db74;
+}
+
+.token.keyword {
+	color: #66d9ef;
+}
+
+.token.regex,
+.token.important {
+	color: #fd971f;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+* { box-sizing: border-box; }
+/* Defaults */
+:root {
+	--font-family: -apple-system, system-ui, sans-serif;
+	--font-family-monospace:
+		Consolas, Menlo, Monaco, Andale Mono WT, Andale Mono, Lucida Console,
+		Lucida Sans Typewriter, DejaVu Sans Mono, Bitstream Vera Sans Mono,
+		Liberation Mono, Nimbus Mono L, Courier New, Courier, monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #c0c0c0;
+	--color-gray-90: #333;
+
+	--background-color: #fff;
+
+	--text-color: var(--color-gray-90);
+	--text-color-link: #082840;
+	--text-color-link-active: #5f2b48;
+	--text-color-link-visited: #17050f;
+
+	--syntax-tab-size: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-gray-20: #e0e0e0;
+		--color-gray-50: #c0c0c0;
+		--color-gray-90: #dad8d8;
+
+		/* --text-color is assigned to --color-gray-_ above */
+		--text-color-link: #1493fb;
+		--text-color-link-active: #6969f7;
+		--text-color-link-visited: #a6a6f8;
+
+		--background-color: #15202b;
+	}
+}
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 50em;
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p {
+	line-height: 1.5;
+}
+
+li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+main {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.links-nextprev {
+	list-style: none;
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+
+table {
+	margin: 1em 0;
+}
+table td,
+table th {
+	padding-right: 1em;
+}
+
+pre,
+code,
+code[class*="language-"],
+pre[class*="language-"] {
+	font-family: var(--font-family-monospace);
+	font-size: 0.95em;
+	line-height: 1.5;
+}
+pre:not([class*="language-"]) {
+	background: #272822;
+	padding: 1em;
+	margin: 0.5em 0;
+	overflow: auto;
+	line-height: 1.375; /* 22px /16 */
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+}
+code {
+	word-break: break-all;
+}
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em 0.5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 1em;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: 0.25em;
+	padding-right: 0.5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-transform: capitalize;
+	font-style: italic;
+}
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.post-metadata time {
+	margin-right: 1em;
+}
+
+/* Direct Links / Markdown Headers */
+.header-anchor {
+	text-decoration: none;
+	font-style: normal;
+	font-size: 1em;
+	margin-left: 0.1em;
+}
+a[href].header-anchor,
+a[href].header-anchor:visited {
+	color: transparent;
+}
+a[href].header-anchor:focus,
+a[href].header-anchor:hover {
+	text-decoration: underline;
+}
+a[href].header-anchor:focus,
+:hover > a[href].header-anchor {
+	color: #aaa;
+}
+
+h2 + .header-anchor {
+	font-size: 1.5em;
+}
+
+/* Modified */
+table,
+th,
+td {
+	border: 1px solid;
+	padding: 0.5em;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* Table of Contents */
+#TableOfContents {
+	margin: 1em 0em;
+}
+#TableOfContents > nav > ol::before {
+	content: "Table of Contents";
+	font-weight: bold;
+	text-align: center;
+	display: block;
+	margin-left: -1.25em;
+}
+
+#TableOfContents > nav > ol {
+	border: 1px dashed var(--color-gray-90);
+	padding: 0.75em 0.75em 0.75em 2em;
+}
+
+#TableOfContents .active {
+	color: var(--text-color-link-active);
+}
+
+@media (min-width: 80em) {
+	#TableOfContents {
+		display: block;
+		width: calc(50vw - 29em);
+		max-width: 20em;
+		position: -webkit-sticky;
+		position: sticky;
+		height: 0;
+		top: 3.5em;
+		margin: 0em;
+		margin-left: 52em;
+		background: none;
+	}
+}
+
+/* Misc */
+.code-play-button {
+	position: relative;
+}
+
+.code-play-button a {
+	position: absolute;
+	text-decoration: none;
+	right: 0em;
+	width: 1.25em;
+	display: inline-block;
+	font-size: 1.5em;
+	color: white;
+	content: "\25B6";
+}
+
+math {
+	font-size: 120%;
+	line-height: 120%;
+}</style>
+		<link rel="stylesheet" href="https://fred-wang.github.io/MathFonts/LatinModern/mathfonts.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mathup@1.0.0/dist/mathup.css">
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+
+		<header>
+			<a href="/blog/" class="home-link">Megh&#39;s Blog</a>
+			<nav>
+				<h2 class="visually-hidden">Top level navigation menu</h2>
+				<ul class="nav">
+					<li class="nav-item"><a href="/blog/">Home</a></li>
+					<li class="nav-item"><a href="/blog/archive/">Archive</a></li>
+					<li class="nav-item"><a href="/blog/about/">About Me</a></li>
+					<li class="nav-item"><a href="https://meghprkh.github.io/">Portfolio</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			
+<h1>Javascript&#39;s using statement &amp; a spinner using aria-busy</h1>
+
+<ul class="post-metadata">
+	<li><time datetime="2026-03-01">01 March 2026</time></li>
+	<li><a href="/blog/tags/javascript/" class="post-tag">JavaScript</a></li>
+</ul>
+
+<aside id="TableOfContents">
+  <nav class="toc">
+        <ol><li><a href="#full-code">Full Code</a></li><li><a href="#other-minimal-js-tricks-i-found-useful">Other minimal JS tricks I found useful</a></li></ol>
+      </nav>
+</aside>
+<p>JS's new <code>using</code> statement works very well as a loading indicator with minimal
+CSS frameworks like <a href="https://picocss.com/">PicoCSS</a> &amp;
+<a href="https://oat.ink/">Oat.Ink</a> which use <code>aria-busy</code> to show a loading indicator.</p>
+<p class="codepen" data-height="300" data-pen-title="Untitled" data-slug-hash="LERpGmp" data-user="meghprkh" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/meghprkh/pen/LERpGmp">
+  Untitled</a> by Megh Parikh (<a href="https://codepen.io/meghprkh">@meghprkh</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async="" src="https://public.codepenassets.com/embed/index.js"></script>
+<p>This trick lets you add a spinner to the clicked button or result container, and
+optionally disable the button while it runs. It also destroys the loading
+indicator if there was an error when using with <code>try/catch</code>.</p>
+<p>The <code>using</code> statement is not baseline yet.
+<a href="https://caniuse.com/mdn-javascript_statements_using">caniuse using</a></p>
+<p>Note: HTMX's has this utility as <code>data-loading-aria-busy</code> in its
+<a href="https://v1.htmx.org/extensions/loading-states/"><code>loading-states</code> extension</a></p>
+<h2 id="full-code" tabindex="-1">Full Code <a class="header-anchor" href="#full-code">#</a></h2>
+<pre class="language-javascript" tabindex="0"><code class="language-javascript"><span class="token comment">/// Usage: `using _loading = new LoadingIndicator(element, disable?)`</span>
+<span class="token comment">/// Where `element` is the element to add the LoadingIndicator to and disable is</span>
+<span class="token comment">/// whether to disable the element</span>
+<span class="token keyword">class</span> <span class="token class-name">LoadingIndicator</span> <span class="token punctuation">{</span>
+	#element<span class="token punctuation">;</span>
+	#disable<span class="token punctuation">;</span>
+	<span class="token function">constructor</span><span class="token punctuation">(</span><span class="token parameter">element<span class="token punctuation">,</span> disable <span class="token operator">=</span> <span class="token boolean">false</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token keyword">this</span><span class="token punctuation">.</span>#element <span class="token operator">=</span> element<span class="token punctuation">;</span>
+		<span class="token keyword">this</span><span class="token punctuation">.</span>#disable <span class="token operator">=</span> disable<span class="token punctuation">;</span>
+		<span class="token keyword">this</span><span class="token punctuation">.</span>#element<span class="token punctuation">.</span><span class="token function">setAttribute</span><span class="token punctuation">(</span><span class="token string">"aria-busy"</span><span class="token punctuation">,</span> <span class="token string">"true"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>#disable<span class="token punctuation">)</span> <span class="token keyword">this</span><span class="token punctuation">.</span>#element<span class="token punctuation">.</span><span class="token function">setAttribute</span><span class="token punctuation">(</span><span class="token string">"disabled"</span><span class="token punctuation">,</span> <span class="token string">"true"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">}</span>
+	<span class="token punctuation">[</span>Symbol<span class="token punctuation">.</span>dispose<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token keyword">this</span><span class="token punctuation">.</span>#element<span class="token punctuation">.</span><span class="token function">removeAttribute</span><span class="token punctuation">(</span><span class="token string">"aria-busy"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>#disable<span class="token punctuation">)</span> <span class="token keyword">this</span><span class="token punctuation">.</span>#element<span class="token punctuation">.</span><span class="token function">removeAttribute</span><span class="token punctuation">(</span><span class="token string">"disabled"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code></pre>
+<p>Example Usage</p>
+<pre class="language-javascript" tabindex="0"><code class="language-javascript">document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">"myBtn"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">,</span> <span class="token keyword">async</span> <span class="token punctuation">(</span><span class="token parameter">e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+	<span class="token keyword">const</span> response <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">"#response"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">try</span> <span class="token punctuation">{</span>
+		using _loading <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">LoadingIndicator</span><span class="token punctuation">(</span>e<span class="token punctuation">.</span>target<span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		using _loading2 <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">LoadingIndicator</span><span class="token punctuation">(</span>response<span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">const</span> res <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">fetch</span><span class="token punctuation">(</span><span class="token string">"https://httpbin.org/delay/2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		response<span class="token punctuation">.</span>innerHTML <span class="token operator">+=</span> <span class="token string">"&lt;p>Hello world!&lt;/p>"</span><span class="token punctuation">;</span>
+	<span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">{</span>
+		response<span class="token punctuation">.</span>innerHTML <span class="token operator">+=</span> <span class="token string">"&lt;p>Failed fetching!&lt;/p>"</span><span class="token punctuation">;</span>
+	<span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<pre class="language-html" tabindex="0"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>link</span>
+	<span class="token attr-name">rel</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>stylesheet<span class="token punctuation">"</span></span>
+	<span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css<span class="token punctuation">"</span></span>
+<span class="token punctuation">/></span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>main</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>container<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>myBtn<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Click me!<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>article</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>response<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+		<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h2</span><span class="token punctuation">></span></span>Response<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h2</span><span class="token punctuation">></span></span>
+	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>article</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>main</span><span class="token punctuation">></span></span></code></pre>
+<h2 id="other-minimal-js-tricks-i-found-useful" tabindex="-1">Other minimal JS tricks I found useful <a class="header-anchor" href="#other-minimal-js-tricks-i-found-useful">#</a></h2>
+<p>While building a small web frontend for a WASM playground around a CLI tool, I
+explored this and a few related stuff. It was a great experience working within
+the no-build web ecosystem.</p>
+<ul>
+<li><a href="https://iconify.design/docs/iconify-icon/"><code>iconify-icon</code> web component</a></li>
+<li>Creating small no-framework UI web components, for example:
+<ul>
+<li>TabBar</li>
+<li>A Splitter / Split Panel with <a href="https://split.js.org/"><code>split.js</code></a></li>
+<li>Sometimes I prefer having minimal web components, for example I have a
+<code>TabBar</code> component not a <code>Tabs</code> component uses PicoCSS's <code>role=&quot;group&quot;</code> and
+a <code>target</code> attribute instead of having the CSS of the tab content also
+integrated. I found that this plays well for simple use cases especially
+when the flex layout of the tab bar could have led to conflicts.</li>
+</ul>
+</li>
+</ul>
+
+<ul class="links-nextprev"><li>Previous: <a href="/blog/posts/crabtime-leptos-icons/">Creating Rust macros via crabtime for including icons in Leptos</a></li>
+
+<script src="/blog/js/index.js"></script>
+<script src="https://utteranc.es/client.js" repo="meghprkh/blog" issue-term="pathname" label="comments" theme="preferred-color-scheme" crossorigin="anonymous" async="">
+</script>
+
+
+		</ul></main>
+
+		<footer></footer>
+
+		<!-- This page `/blog/posts/js-using-and-spinner/` was built on 2026-03-01T22:49:43.539Z -->
+	</body>
+
+	<script data-goatcounter="https://meghprkh.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>
+	<noscript>
+		<img src="https://meghprkh.goatcounter.com/count?p=/blog/blog/posts/js-using-and-spinner/?noscript">
+	</noscript>
+</html>

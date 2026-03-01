@@ -342,3 +342,8 @@ table {
 	color: white;
 	content: "\25B6";
 }
+
+math {
+	font-size: 120%;
+	line-height: 120%;
+}

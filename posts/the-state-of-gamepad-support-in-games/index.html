@@ -520,7 +520,14 @@ table {
 	font-size: 1.5em;
 	color: white;
 	content: "\25B6";
+}
+
+math {
+	font-size: 120%;
+	line-height: 120%;
 }</style>
+		<link rel="stylesheet" href="https://fred-wang.github.io/MathFonts/LatinModern/mathfonts.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mathup@1.0.0/dist/mathup.css">
 	</head>
 	<body>
 		<a href="#skip" class="visually-hidden">Skip to main content</a>
@@ -556,23 +563,48 @@ table {
         <ol><li><a href="#which-gamepads-are-supported">Which gamepads are supported?</a></li><li><a href="#custom-mappings">Custom mappings?</a></li><li><a href="#multiplayer-support">Multiplayer support</a></li><li><a href="#next-steps">Next steps</a></li></ol>
       </nav>
 </aside>
-<p>Gamepad support has now been merged into <a href="https://wiki.gnome.org/Design/Playground/Games">GNOME Games</a> <a href="https://github.com/Kekun/gnome-games/commit/c110c0390f40821779f2663bde50027b1f9f1acd">v3.21.4</a> !!! This means that you can play your favorite retro games using a gamepad!!!</p>
+<p>Gamepad support has now been merged into
+<a href="https://wiki.gnome.org/Design/Playground/Games">GNOME Games</a>
+<a href="https://github.com/Kekun/gnome-games/commit/c110c0390f40821779f2663bde50027b1f9f1acd">v3.21.4</a>
+!!! This means that you can play your favorite retro games using a gamepad!!!</p>
 <!--more-->
 <h2 id="which-gamepads-are-supported" tabindex="-1">Which gamepads are supported? <a class="header-anchor" href="#which-gamepads-are-supported">#</a></h2>
-<p>But you may wondering which gamepads are supported out of the box. The answer is a <a href="https://github.com/gabomdq/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt">lot of them</a>! We use the <a href="https://github.com/spurious/SDL-mirror/blob/release-2.0.4/include/SDL_gamecontroller.h#L96-L108">SDL mappings format</a> to map your gamepad to a standard gamepad (by this I mean a seventh generation/XBox-360 kind of gamepad). And we use a huge community maintained <a href="https://github.com/gabomdq/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt">database</a> of mappings, so your device would most likely be there. We use a slightly modified version of this database. See <a href="https://github.com/gabomdq/SDL_GameControllerDB/pull/94">#94</a> and <a href="https://github.com/gabomdq/SDL_GameControllerDB/pull/95">#95</a> for more details.</p>
+<p>But you may wondering which gamepads are supported out of the box. The answer is
+a <a href="https://github.com/gabomdq/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt">lot of them</a>! We use the <a href="https://github.com/spurious/SDL-mirror/blob/release-2.0.4/include/SDL_gamecontroller.h#L96-L108">SDL mappings format</a> to map your gamepad to a
+standard gamepad (by this I mean a seventh generation/XBox-360 kind of gamepad).
+And we use a huge community maintained <a href="https://github.com/gabomdq/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt">database</a> of mappings, so your device
+would most likely be there. We use a slightly modified version of this database.
+See <a href="https://github.com/gabomdq/SDL_GameControllerDB/pull/94">#94</a> and
+<a href="https://github.com/gabomdq/SDL_GameControllerDB/pull/95">#95</a> for more details.</p>
 <h2 id="custom-mappings" tabindex="-1">Custom mappings? <a class="header-anchor" href="#custom-mappings">#</a></h2>
-<p>Well I just realized while writing this post that we had forgotten about this :sweat_smile:. But I have made a <a href="https://github.com/Kekun/gnome-games/pull/310">PR</a> for it, so it should get merged soon. But as of now there is no GUI for it. Currently you can use Steam or the SDL test/controllermap tool to generate a custom mapping string as described <a href="https://github.com/spurious/SDL-mirror/blob/release-2.0.4/src/joystick/SDL_gamecontrollerdb.h#L26-L30">here</a>. Then you should paste in in a file in the user's config directory. As per this PR this file is <code>&lt;config_dir&gt;/gnome-games/gamecontrollerdb.txt</code> (<code>&lt;config_dir&gt;</code> is mostly <code>~/.config</code>).</p>
+<p>Well I just realized while writing this post that we had forgotten about this
+:sweat_smile:. But I have made a
+<a href="https://github.com/Kekun/gnome-games/pull/310">PR</a> for it, so it should get
+merged soon. But as of now there is no GUI for it. Currently you can use Steam
+or the SDL test/controllermap tool to generate a custom mapping string as
+described
+<a href="https://github.com/spurious/SDL-mirror/blob/release-2.0.4/src/joystick/SDL_gamecontrollerdb.h#L26-L30">here</a>.
+Then you should paste in in a file in the user's config directory. As per this
+PR this file is <code>&lt;config_dir&gt;/gnome-games/gamecontrollerdb.txt</code> (<code>&lt;config_dir&gt;</code>
+is mostly <code>~/.config</code>).</p>
 <h2 id="multiplayer-support" tabindex="-1">Multiplayer support <a class="header-anchor" href="#multiplayer-support">#</a></h2>
-<p>Multiplayer games are quite well supported. As of now there is no GUI for reassigning gamepads to other players, but the default behaviour is quite predictable. Just plugin the gamepads in the order of the players and all will be well.</p>
+<p>Multiplayer games are quite well supported. As of now there is no GUI for
+reassigning gamepads to other players, but the default behaviour is quite
+predictable. Just plugin the gamepads in the order of the players and all will
+be well.</p>
 <p>The exact behaviour is this:</p>
 <ul>
 <li>the first player with no gamepad will be assigned the keyboard</li>
-<li>if there are <em>N</em> initially plugged-in gamepads, then they are assigned to the first <em>N</em> players and keyboard is assigned to player <em>N + 1</em></li>
-<li>when a gamepad is plugged in, it is assigned to the first player with no gamepad (it may not be the last one), it can replace the keyboard</li>
-<li>when a gamepad is plugged out, its player shouldn't have any gamepad assigned but it shouldn't change the player to which other gamepads are assigned</li>
+<li>if there are <em>N</em> initially plugged-in gamepads, then they are assigned to the
+first <em>N</em> players and keyboard is assigned to player <em>N + 1</em></li>
+<li>when a gamepad is plugged in, it is assigned to the first player with no
+gamepad (it may not be the last one), it can replace the keyboard</li>
+<li>when a gamepad is plugged out, its player shouldn't have any gamepad assigned
+but it shouldn't change the player to which other gamepads are assigned</li>
 </ul>
 <h2 id="next-steps" tabindex="-1">Next steps <a class="header-anchor" href="#next-steps">#</a></h2>
-<p>The next steps involve adding a UI to remap the gamepads assigned too the players and then maybe a UI for remapping the controls if time permits.</p>
+<p>The next steps involve adding a UI to remap the gamepads assigned too the
+players and then maybe a UI for remapping the controls if time permits.</p>
 <p>Happy gaming!</p>
 
 <ul class="links-nextprev"><li>Previous: <a href="/blog/posts/adventures-with-the-meson-build-system-and-a-gtk-playground/">Adventures with the Meson Build System and a GTK Playground</a></li><li>Next: <a href="/blog/posts/gsoc-summary/">GSoC Summary</a></li>
@@ -586,7 +618,7 @@ table {
 
 		<footer></footer>
 
-		<!-- This page `/blog/posts/the-state-of-gamepad-support-in-games/` was built on 2025-04-30T22:14:41.417Z -->
+		<!-- This page `/blog/posts/the-state-of-gamepad-support-in-games/` was built on 2026-03-01T22:49:43.540Z -->
 	</body>
 
 	<script data-goatcounter="https://meghprkh.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>

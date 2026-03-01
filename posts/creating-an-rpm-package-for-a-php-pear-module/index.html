@@ -520,7 +520,14 @@ table {
 	font-size: 1.5em;
 	color: white;
 	content: "\25B6";
+}
+
+math {
+	font-size: 120%;
+	line-height: 120%;
 }</style>
+		<link rel="stylesheet" href="https://fred-wang.github.io/MathFonts/LatinModern/mathfonts.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mathup@1.0.0/dist/mathup.css">
 	</head>
 	<body>
 		<a href="#skip" class="visually-hidden">Skip to main content</a>
@@ -553,15 +560,27 @@ table {
         <ol><li><a href="#the-channel-package">The Channel package</a></li><li><a href="#the-pear-package">The PEAR Package</a></li><li><a href="#the-copr-build-system">The Copr Build System</a></li></ol>
       </nav>
 </aside>
-<p>I am participating in Google Code In 2014 and two of my tasks were based on RPM packaging for Fedora.
-<a href="http://www.google-melange.com/gci/task/view/google/gci2014/5262603731337216">The first</a> was packaging <a href="http://www.phalconphp.com/en/">PhalconPHP</a> for Fedora while <a href="http://www.google-melange.com/gci/task/view/google/gci2014/5774064475963392">the second</a> was packaging <a href="http://cakephp.org/">CakePHP</a>.
-Phalcon is an C extension while Cake is a PEAR/Composer extension.</p>
+<p>I am participating in Google Code In 2014 and two of my tasks were based on RPM
+packaging for Fedora.
+<a href="http://www.google-melange.com/gci/task/view/google/gci2014/5262603731337216">The first</a>
+was packaging <a href="http://www.phalconphp.com/en/">PhalconPHP</a> for Fedora while
+<a href="http://www.google-melange.com/gci/task/view/google/gci2014/5774064475963392">the second</a>
+was packaging <a href="http://cakephp.org/">CakePHP</a>. Phalcon is an C extension while
+Cake is a PEAR/Composer extension.</p>
 <!-- more -->
 <p>I will discuss the easier of the two, Cake as it was a PEAR package.</p>
-<p>So first of all, you need to learn some RPM Packaging Basics. <a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package">This link</a> briefly introduces us to the necessary tools and their setup. But the above link does not introduce us to <a href="http://copr.fedoraproject.org/">Copr</a> which may be used to distribute and even build our RPMS on different platforms (we can use it as a sort of substitute for <a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package#Mock_and_Koji">Koji or Mock</a>).</p>
-<p>Then I recommend that you read [PHP Packaging wiki](<a href="http://fedoraproject.org/wiki/Packaging">http://fedoraproject.org/wiki/Packaging</a>:</p>
+<p>So first of all, you need to learn some RPM Packaging Basics.
+<a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package">This link</a> briefly
+introduces us to the necessary tools and their setup. But the above link does
+not introduce us to <a href="http://copr.fedoraproject.org/">Copr</a> which may be used to
+distribute and even build our RPMS on different platforms (we can use it as a
+sort of substitute for
+<a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package#Mock_and_Koji">Koji or Mock</a>).</p>
+<p>Then I recommend that you read [PHP Packaging
+wiki](<a href="http://fedoraproject.org/wiki/Packaging">http://fedoraproject.org/wiki/Packaging</a>:</p>
 <h2 id="the-channel-package" tabindex="-1">The Channel package <a class="header-anchor" href="#the-channel-package">#</a></h2>
-<p>So lets say we have identified the PEAR channel (<a href="http://pear.example.org">pear.example.org</a>) and it is not the standard PEAR channel. So we need to create a CHANNEL package.</p>
+<p>So lets say we have identified the PEAR channel (<a href="http://pear.example.org">pear.example.org</a>) and it is not
+the standard PEAR channel. So we need to create a CHANNEL package.</p>
 <p>So lets create the SPEC file :</p>
 <pre><code>%{!?__pear: %{expand: %%global __pear %{_bindir}/pear}}
 %global pear_channel pear.example.org
@@ -631,7 +650,8 @@ fi
 * Mon Dec 15 2014 Megh Parikh &lt;meghprkh@gmail.com&gt; 1.3-1
 - Initial Release.
 </code></pre>
-<p>As you can see you just need to edit a few lines (lines 2,3) to update the channel name and URL and the last lines for proper changelogs.</p>
+<p>As you can see you just need to edit a few lines (lines 2,3) to update the
+channel name and URL and the last lines for proper changelogs.</p>
 <p>Now you can build this spec using the <code>rpmbuild</code> command.</p>
 <p>Install the generated RPM on your system (provided the build is successful).</p>
 <h2 id="the-pear-package" tabindex="-1">The PEAR Package <a class="header-anchor" href="#the-pear-package">#</a></h2>
@@ -641,7 +661,8 @@ fi
 <p>First install the <code>php-pear-PEAR-Command-Packaging</code> package.</p>
 </li>
 <li>
-<p>Download the PEAR package from the channel (mostly <em><a href="http://channelname/get/name-version.tgz">http://channelname/get/name-version.tgz</a></em>)</p>
+<p>Download the PEAR package from the channel (mostly
+<em><a href="http://channelname/get/name-version.tgz">http://channelname/get/name-version.tgz</a></em>)</p>
 </li>
 <li>
 <p>Run <code>pear make-rpm-spec Foo.tgz</code> .</p>
@@ -650,10 +671,12 @@ fi
 <p>and a spec file will be generated for you (with all required files) …</p>
 </li>
 <li>
-<p>… but if it is not from the standard PEAR channel, you will need to add the channel to the requires and modify certain lines …</p>
+<p>… but if it is not from the standard PEAR channel, you will need to add the
+channel to the requires and modify certain lines …</p>
 </li>
 <li>
-<p>You may look at <a href="https://gist.github.com/meghprkh/39fa65e683f36a4b3996">my spec for CakePHP</a></p>
+<p>You may look at
+<a href="https://gist.github.com/meghprkh/39fa65e683f36a4b3996">my spec for CakePHP</a></p>
 </li>
 <li>
 <p>Done now You just need to build it …</p>
@@ -670,17 +693,24 @@ BuildRequires:  php-channel(%{pear_channel})
 Requires:       php-channel(%{pear_channel})
 </code></pre>
 <h2 id="the-copr-build-system" tabindex="-1">The Copr Build System <a class="header-anchor" href="#the-copr-build-system">#</a></h2>
-<p>Lets say you have Fedora 20 on your system but you also want to build it for other Fedora and EPEL versions and also make the installation simpler for the end user. So the right tool you need to use is the <a href="http://copr.fedoraproject.org/">Copr</a> Build System.</p>
+<p>Lets say you have Fedora 20 on your system but you also want to build it for
+other Fedora and EPEL versions and also make the installation simpler for the
+end user. So the right tool you need to use is the
+<a href="http://copr.fedoraproject.org/">Copr</a> Build System.</p>
 <ul>
-<li>Upload your SRPMs to some file sharing service which permits direct downloads through a link (I used GitHub but thats a bad habit for git is extremely slow with binary files (SRPMS are gzipped files)).</li>
+<li>Upload your SRPMs to some file sharing service which permits direct downloads
+through a link (I used GitHub but thats a bad habit for git is extremely slow
+with binary files (SRPMS are gzipped files)).</li>
 <li>Go to the Copr build system page.</li>
 <li>Read their wiki a little.</li>
 <li>Login and create a new repo</li>
 <li>First build the Channel package in your repo</li>
 <li>Drink some coffee. Its gonna take some time.</li>
-<li>Next build the PEAR package (build it after the first completes for it is dependent onthe channel package)</li>
+<li>Next build the PEAR package (build it after the first completes for it is
+dependent onthe channel package)</li>
 <li>Share your work.</li>
-<li>You may see my repo for <a href="https://copr.fedoraproject.org/coprs/meghprkh/cakephp/">copy and paste installation instructions</a></li>
+<li>You may see my repo for
+<a href="https://copr.fedoraproject.org/coprs/meghprkh/cakephp/">copy and paste installation instructions</a></li>
 </ul>
 
 <ul class="links-nextprev"><li>Next: <a href="/blog/posts/gsoc-2016-introduction/">GSoC 2016: Introduction</a></li>
@@ -694,7 +724,7 @@ Requires:       php-channel(%{pear_channel})
 
 		<footer></footer>
 
-		<!-- This page `/blog/posts/creating-an-rpm-package-for-a-php-pear-module/` was built on 2025-04-30T22:14:41.415Z -->
+		<!-- This page `/blog/posts/creating-an-rpm-package-for-a-php-pear-module/` was built on 2026-03-01T22:49:43.538Z -->
 	</body>
 
 	<script data-goatcounter="https://meghprkh.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>

@@ -520,7 +520,14 @@ table {
 	font-size: 1.5em;
 	color: white;
 	content: "\25B6";
+}
+
+math {
+	font-size: 120%;
+	line-height: 120%;
 }</style>
+		<link rel="stylesheet" href="https://fred-wang.github.io/MathFonts/LatinModern/mathfonts.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mathup@1.0.0/dist/mathup.css">
 	</head>
 	<body>
 		<a href="#skip" class="visually-hidden">Skip to main content</a>
@@ -554,13 +561,27 @@ table {
         <ol><li><a href="#the-raw-icon-content-macro">The raw_icon_content! macro</a></li><li><a href="#the-define-icon-component-macro">The define_icon_component! macro</a></li><li><a href="#handling-size-and-stroke-width">Handling size and stroke_width</a></li><li><a href="#asides">Asides</a><ol><li><a href="#why-not-include-view">Why not include_view!?</a></li><li><a href="#crabtime-and-errors">Crabtime and errors</a></li><li><a href="#crabtime-and-string-escaping">Crabtime and string escaping</a></li></ol></li><li><a href="#summary">Summary</a></li></ol>
       </nav>
 </aside>
-<p>TLDR: Using <a href="https://docs.rs/crabtime/latest/crabtime/"><code>crabtime</code></a> to easily embed icons in <a href="https://leptos.dev/">Leptos</a> like how you would do it in ReactJS 🦀🦀</p>
-<p>Web development in Rust is exciting. While exploring Leptos, I ran into issues adding icons — but managed to solve them using <code>crabtime</code>. This posts shows its Zig-like compile-time power.</p>
+<p>TLDR: Using <a href="https://docs.rs/crabtime/latest/crabtime/"><code>crabtime</code></a> to easily embed icons in <a href="https://leptos.dev/">Leptos</a>
+like how you would do it in ReactJS 🦀🦀</p>
+<p>Web development in Rust is exciting. While exploring Leptos, I ran into issues
+adding icons — but managed to solve them using <code>crabtime</code>. This posts shows its
+Zig-like compile-time power.</p>
 <!-- more -->
-<p>Icon fonts like FontAwesome are outdated; embedding SVGs with includes directly is now preferred. Libraries like <a href="https://lucide.dev/">Lucide</a> use Javascript for this, and Rust ports like <a href="https://github.com/opensourcecheemsburgers/leptos_lucide/"><code>leptos_lucide</code></a> &amp; <a href="https://lucide.rustforweb.org/frameworks/leptos.html"><code>lucide-leptos</code></a> offer similar functionality. This gives you tree shaking, only including the icons you need. Other things like <code>currentColor</code>, <code>size</code>, etc work too. However generating a component per icon, for 2000+ icons, compile times skyrocket.</p>
-<p>The idea is to define a macro for defining an &quot;icon component&quot; and then explictly list the icons we may want to use in the project and only pay compile time costs for them.</p>
+<p>Icon fonts like FontAwesome are outdated; embedding SVGs with includes directly
+is now preferred. Libraries like <a href="https://lucide.dev/">Lucide</a> use Javascript for this, and
+Rust ports like <a href="https://github.com/opensourcecheemsburgers/leptos_lucide/"><code>leptos_lucide</code></a> &amp;
+<a href="https://lucide.rustforweb.org/frameworks/leptos.html"><code>lucide-leptos</code></a> offer similar functionality. This gives you
+tree shaking, only including the icons you need. Other things like
+<code>currentColor</code>, <code>size</code>, etc work too. However generating a component per icon,
+for 2000+ icons, compile times skyrocket.</p>
+<p>The idea is to define a macro for defining an &quot;icon component&quot; and then
+explictly list the icons we may want to use in the project and only pay compile
+time costs for them.</p>
 <h2 id="the-raw-icon-content-macro" tabindex="-1">The <code>raw_icon_content!</code> macro <a class="header-anchor" href="#the-raw-icon-content-macro">#</a></h2>
-<p>First lets create a small macro to include and escape the content of a macro. This is very similar to <a href="https://doc.rust-lang.org/std/macro.include_str.html#examples">std::include_str!</a> but shows basic crabtime usage and assumes paths for our icons.</p>
+<p>First lets create a small macro to include and escape the content of a macro.
+This is very similar to
+<a href="https://doc.rust-lang.org/std/macro.include_str.html#examples">std::include_str!</a>
+but shows basic crabtime usage and assumes paths for our icons.</p>
 <pre class="language-rust" tabindex="0"><code class="language-rust"><span class="token attribute attr-name">#[crabtime::expression]</span>
 <span class="token attribute attr-name">#[macro_export]</span>
 <span class="token keyword">pub</span> <span class="token keyword">fn</span> <span class="token function-definition function">raw_icon_content</span><span class="token punctuation">(</span>icon_name<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span> <span class="token punctuation">-></span> <span class="token class-name">String</span> <span class="token punctuation">{</span>
@@ -583,14 +604,19 @@ table {
 <span class="token macro property">view!</span> <span class="token punctuation">{</span>
     <span class="token operator">&lt;</span>i <span class="token punctuation">{</span><span class="token namespace">html<span class="token punctuation">::</span></span><span class="token function">inner_html</span><span class="token punctuation">(</span><span class="token macro property">raw_icon_content!</span><span class="token punctuation">(</span><span class="token string">"menu"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">}</span> <span class="token operator">/</span><span class="token operator">></span>
 <span class="token punctuation">}</span></code></pre>
-<p>If we were to <code>cargo expand</code> the line <code>raw_icon_content!(&quot;menu&quot;)</code>, it would read something like</p>
+<p>If we were to <code>cargo expand</code> the line <code>raw_icon_content!(&quot;menu&quot;)</code>, it would read
+something like</p>
 <pre class="language-rust" tabindex="0"><code class="language-rust"><span class="token string">r##"
 &lt;!-- license lucide-static v0.503.0 - ISC -->
 &lt;svg width="24" height="24" stroke="currentColor"> &lt;line .. /> &lt;/svg>
 "##</span></code></pre>
-<p>(The exact SVG content can be found <a href="https://github.com/lucide-icons/lucide/blob/main/icons/menu.svg?short_path=c68f00d">here</a>)</p>
+<p>(The exact SVG content can be found
+<a href="https://github.com/lucide-icons/lucide/blob/main/icons/menu.svg?short_path=c68f00d">here</a>)</p>
 <h2 id="the-define-icon-component-macro" tabindex="-1">The <code>define_icon_component!</code> macro <a class="header-anchor" href="#the-define-icon-component-macro">#</a></h2>
-<p>However if we were to include each icon in every component we will have duplicated icon strings (not sure if optimization helps there). It also doesnt give us a nice &quot;component&quot; API. So lets define a <code>define_icon_component</code> macro where we see some ``crabtime` power</p>
+<p>However if we were to include each icon in every component we will have
+duplicated icon strings (not sure if optimization helps there). It also doesnt
+give us a nice &quot;component&quot; API. So lets define a <code>define_icon_component</code> macro
+where we see some ``crabtime` power</p>
 <pre class="language-rust" tabindex="0"><code class="language-rust"><span class="token comment">// filename: icons.rs</span>
 
 <span class="token attribute attr-name">#[crabtime::function]</span>
@@ -609,9 +635,14 @@ table {
 <span class="token punctuation">}</span>
 
 <span class="token macro property">define_icon_component!</span><span class="token punctuation">(</span><span class="token class-name">Menu</span><span class="token punctuation">,</span> <span class="token string">"menu"</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
-<p>This allows us to use the component as <code>&lt;icons::Menu /&gt;</code> in other components. This is where crabtime really shines, allowing us to write Rust code as string template-y code generation. There are some annoyances about having to re-escape strings, especially since it has to be done out of line, but otherwise it works like magic!</p>
+<p>This allows us to use the component as <code>&lt;icons::Menu /&gt;</code> in other components.
+This is where crabtime really shines, allowing us to write Rust code as string
+template-y code generation. There are some annoyances about having to re-escape
+strings, especially since it has to be done out of line, but otherwise it works
+like magic!</p>
 <h2 id="handling-size-and-stroke-width" tabindex="-1">Handling <code>size</code> and <code>stroke_width</code> <a class="header-anchor" href="#handling-size-and-stroke-width">#</a></h2>
-<p>Enhancing the <code>define_icon_component!</code> macro with some CSS and props allows us to handle sizing and stroke-width.</p>
+<p>Enhancing the <code>define_icon_component!</code> macro with some CSS and props allows us
+to handle sizing and stroke-width.</p>
 <pre class="language-css" tabindex="0"><code class="language-css"><span class="token comment">/* file: index.css - or use inline css, or a library like stylers */</span>
 <span class="token selector">.icon > svg</span> <span class="token punctuation">{</span>
 	<span class="token property">width</span><span class="token punctuation">:</span> inherit<span class="token punctuation">;</span>
@@ -641,12 +672,22 @@ table {
 <span class="token punctuation">}</span></code></pre>
 <h2 id="asides" tabindex="-1">Asides <a class="header-anchor" href="#asides">#</a></h2>
 <h3 id="why-not-include-view" tabindex="-1">Why not <code>include_view!</code>? <a class="header-anchor" href="#why-not-include-view">#</a></h3>
-<p>Leptos comes with a macro to include an external view, but this will try to parse it as the content of a <code>view!</code> macro. We want it to be inner html. Specifically HTML comments are a problem - <a href="https://github.com/leptos-rs/leptos/issues/3887">Github issue</a></p>
+<p>Leptos comes with a macro to include an external view, but this will try to
+parse it as the content of a <code>view!</code> macro. We want it to be inner html.
+Specifically HTML comments are a problem -
+<a href="https://github.com/leptos-rs/leptos/issues/3887">Github issue</a></p>
 <h3 id="crabtime-and-errors" tabindex="-1">Crabtime and errors <a class="header-anchor" href="#crabtime-and-errors">#</a></h3>
-<p>I am unsure if <code>panic</code>-ing or <code>crabtime::error</code> is the way to go. In stable, <code>error</code> only logs it in the console, but does not fail the compilation. <a href="https://docs.rs/crabtime/latest/crabtime/#-logging--debugging">Behaviour Reference</a>.</p>
+<p>I am unsure if <code>panic</code>-ing or <code>crabtime::error</code> is the way to go. In stable,
+<code>error</code> only logs it in the console, but does not fail the compilation.
+<a href="https://docs.rs/crabtime/latest/crabtime/#-logging--debugging">Behaviour Reference</a>.</p>
 <h3 id="crabtime-and-string-escaping" tabindex="-1">Crabtime and string escaping <a class="header-anchor" href="#crabtime-and-string-escaping">#</a></h3>
-<p>I am unsure if there is a better way to do this, but string escaping is suggested <a href="https://docs.rs/crabtime/latest/crabtime/#-output">here</a> under the note &quot;Interpolated variables are inserted as-is, without additional quotes or escape characters.&quot;</p>
-<p>It would be nice if crabtime provides an <code>crabtime::escape_string!</code> macro that works and can be used inline inside a <code>crabtime::output!</code> - <a href="https://github.com/wdanilo/crabtime/issues/37">Github Issue</a></p>
+<p>I am unsure if there is a better way to do this, but string escaping is
+suggested <a href="https://docs.rs/crabtime/latest/crabtime/#-output">here</a> under the
+note &quot;Interpolated variables are inserted as-is, without additional quotes or
+escape characters.&quot;</p>
+<p>It would be nice if crabtime provides an <code>crabtime::escape_string!</code> macro that
+works and can be used inline inside a <code>crabtime::output!</code> -
+<a href="https://github.com/wdanilo/crabtime/issues/37">Github Issue</a></p>
 <pre class="language-rust" tabindex="0"><code class="language-rust"><span class="token keyword">fn</span> <span class="token function-definition function">escape_string</span><span class="token punctuation">(</span>in_str<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span> <span class="token punctuation">-></span> <span class="token class-name">String</span> <span class="token punctuation">{</span>
     <span class="token comment">// this implementation uses hacky hash counting but it can be smarter if it wants</span>
     <span class="token keyword">let</span> num_hashes <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">..</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token closure-params"><span class="token closure-punctuation punctuation">|</span><span class="token operator">&amp;</span>n<span class="token closure-punctuation punctuation">|</span></span> <span class="token operator">!</span>in_str<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token string">"#"</span><span class="token punctuation">.</span><span class="token function">repeat</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unwrap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -666,7 +707,9 @@ table {
 <span class="token comment">// should be</span>
 <span class="token keyword">let</span> a <span class="token operator">=</span> <span class="token string">r##"A#"b"##</span><span class="token punctuation">;</span></code></pre>
 <h2 id="summary" tabindex="-1">Summary <a class="header-anchor" href="#summary">#</a></h2>
-<p>This was my first time using both Leptos and crabtime. While the initial pain was high, and the macro errors are still hard to debug sometimes, crabtime really makes solving these problems fun imo.</p>
+<p>This was my first time using both Leptos and crabtime. While the initial pain
+was high, and the macro errors are still hard to debug sometimes, crabtime
+really makes solving these problems fun imo.</p>
 <details>
 <summary>Full code (click to expand)</summary>
 <pre class="language-rust" tabindex="0"><code class="language-rust"><span class="token comment">// SPDX-FileCopyrightText: 2025 Megh Parikh (https://meghprkh.mit-license.org/)</span>
@@ -722,7 +765,7 @@ table {
 <span class="token macro property">define_icon_component!</span><span class="token punctuation">(</span><span class="token class-name">Menu</span><span class="token punctuation">,</span> <span class="token string">"menu"</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
 </details>
 
-<ul class="links-nextprev"><li>Previous: <a href="/blog/posts/rust-traits-associated-types-generic-traits/">Rust Traits - Associated Types and Generic Traits</a></li>
+<ul class="links-nextprev"><li>Previous: <a href="/blog/posts/rust-traits-associated-types-generic-traits/">Rust Traits - Associated Types and Generic Traits</a></li><li>Next: <a href="/blog/posts/js-using-and-spinner/">Javascript&#39;s using statement &amp; a spinner using aria-busy</a></li>
 
 <script src="/blog/js/index.js"></script>
 <script src="https://utteranc.es/client.js" repo="meghprkh/blog" issue-term="pathname" label="comments" theme="preferred-color-scheme" crossorigin="anonymous" async="">
@@ -733,7 +776,7 @@ table {
 
 		<footer></footer>
 
-		<!-- This page `/blog/posts/crabtime-leptos-icons/` was built on 2025-04-30T22:14:41.414Z -->
+		<!-- This page `/blog/posts/crabtime-leptos-icons/` was built on 2026-03-01T22:49:43.538Z -->
 	</body>
 
 	<script data-goatcounter="https://meghprkh.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>
