@@ -57,15 +57,29 @@ int main(int argc, char ** argv) {
 
 {% endsetPageVar %}
 
-Non-inlined function calls can be expensive. The compiler would not treat the body of the caller and the callee in the same basic block and thus not be able to apply certain optimizations. This is not an issue as the compiler does a pretty good job at inlining mostly, but if you are calling a function in a big loop you might want to ensure that the compiler always inlines it. `inline`, `always_inline` and `forceinline` are just hints. They dont always inline [^1] [^2].
+Non-inlined function calls can be expensive. The compiler would not treat the
+body of the caller and the callee in the same basic block and thus not be able
+to apply certain optimizations. This is not an issue as the compiler does a
+pretty good job at inlining mostly, but if you are calling a function in a big
+loop you might want to ensure that the compiler always inlines it. `inline`,
+`always_inline` and `forceinline` are just hints. They dont always inline [^1]
+[^2].
 
-Example of some libraries that do these [mesa](https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/18807), [fastfloat](https://github.com/fastfloat/fast_float/blob/main/include/fast_float/float_common.h#L77-L81)
+Example of some libraries that do these
+[mesa](https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/18807),
+[fastfloat](https://github.com/fastfloat/fast_float/blob/main/include/fast_float/float_common.h#L77-L81)
 
-Trust the compiler some say. Profile your code say the others. Use macros say the old and wise.
+Trust the compiler some say. Profile your code say the others. Use macros say
+the old and wise.
 
-But what if you are developing a library and need to ensure that your method gets inlined? You cant say trust the compiler, because the users want to trust your library. You cant profile the code, because the application isn't your code.
+But what if you are developing a library and need to ensure that your method
+gets inlined? You cant say trust the compiler, because the users want to trust
+your library. You cant profile the code, because the application isn't your
+code.
 
-We want a `FORCE_INLINE` keyword that _just works_, at least on the three major compilers - `g++`, `clang` and `msvc`. If it cant inline, it should error in a meaningful way.
+We want a `FORCE_INLINE` keyword that _just works_, at least on the three major
+compilers - `g++`, `clang` and `msvc`. If it cant inline, it should error in a
+meaningful way.
 
 The example:
 
@@ -76,7 +90,9 @@ int factorial(int x) { return (x == 0) ? 1 : x * factorial(x - 1); }
 
 Putting our `FORCE_INLINE` keyword in front of `decrement` should inline.
 
-It should either compile-time error or link-time error if put it in front of `factorial` (as the recursion depth / input argument is not known at compile-time).
+It should either compile-time error or link-time error if put it in front of
+`factorial` (as the recursion depth / input argument is not known at
+compile-time).
 
 ```text
 #if defined(__clang__)
@@ -94,7 +110,9 @@ It should either compile-time error or link-time error if put it in front of `fa
 #endif
 ```
 
-Note the link-error / clang linker error part is a bit shady and most people would not want to adopt it unless working in somewhat close collaboration. You can remove the `[[gnu::gnu_inline]] extern` part.
+Note the link-error / clang linker error part is a bit shady and most people
+would not want to adopt it unless working in somewhat close collaboration. You
+can remove the `[[gnu::gnu_inline]] extern` part.
 
 Now lets check it in action:
 
@@ -109,33 +127,47 @@ How it works:
 - GCC would generate an error if it cant `always_inline` [^3]
 - Clang:
   - Does not generate an error for non-inlinable `always_inline` functions. [^1]
-  - Instead `gnu_inline` and `extern inline` forces it to not generate any code for the function [^4] [^5]
+  - Instead `gnu_inline` and `extern inline` forces it to not generate any code
+    for the function [^4] [^5]
   - Thus give a linker error if it is not inlined
 - MSVC:
   - Generates a warning for for non-inlinable `__forceinline` functions
-  - But only if compiled with any "inline expansion" optimization (`/Ob<n>`) [^2]
+  - But only if compiled with any "inline expansion" optimization (`/Ob<n>`)
+    [^2]
   - This is present with `/O1` or `/O2`
   - We promote this warning to an error
 
-**Note**: do not use this with virtual functions. You can't "force inline" them as they need to be pointed to at runtime.
+**Note**: do not use this with virtual functions. You can't "force inline" them
+as they need to be pointed to at runtime.
 
-GCC summarizes this as "An Inline Function is As Fast As a Macro" [^5]. Zig provides something similar as its [`callconv(.Inline)`](https://ziglang.org/documentation/0.9.1/#Functions)
+GCC summarizes this as "An Inline Function is As Fast As a Macro" [^5]. Zig
+provides something similar as its
+[`callconv(.Inline)`](https://ziglang.org/documentation/0.9.1/#Functions)
 
-Thus we can and should build syntactic sugar as functions instead of weird macros. Without any worries of performance.
+Thus we can and should build syntactic sugar as functions instead of weird
+macros. Without any worries of performance.
 
-[^1]: https://clang.llvm.org/docs/AttributeReference.html#always-inline-force-inline
+[^1]:
+    https://clang.llvm.org/docs/AttributeReference.html#always-inline-force-inline
 
 [^2]: https://docs.microsoft.com/en-us/cpp/cpp/inline-functions-cpp
 
-[^3]: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#always_inline
+[^3]:
+    https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#always_inline
 
 [^4]: https://clang.llvm.org/docs/AttributeReference.html#gnu-inline
 
 [^5]: https://gcc.gnu.org/onlinedocs/gcc/Inline.html
 
-[clang_working]: {% godbolt_inline compiler_type="clang", language="c++", execution_args="a b c d e", code=page.code, url_only=true %}
-[clang_error]: {% godbolt_inline compiler_type="clang", language="c++", execution_args="a b c d e", code=page.code_error, url_only=true %}
-[gcc_working]: {% godbolt_inline compiler_type="gcc", language="c++", execution_args="a b c d e", code=page.code, url_only=true %}
-[gcc_error]: {% godbolt_inline compiler_type="gcc", language="c++", execution_args="a b c d e", code=page.code_error, url_only=true %}
-[msvc_working]: {% godbolt_inline compiler_type="msvc", language="c++", compiler_args="/Ob1", execution_args="a b c d e", code=page.code, url_only=true %}
-[msvc_error]: {% godbolt_inline compiler_type="msvc", language="c++", compiler_args="/Ob1", execution_args="a b c d e", code=page.code_error, url_only=true %}
+[clang_working]:
+{% godbolt_inline compiler_type="clang", language="c++", execution_args="a b c d e", code=page.code, url_only=true %}
+[clang_error]:
+{% godbolt_inline compiler_type="clang", language="c++", execution_args="a b c d e", code=page.code_error, url_only=true %}
+[gcc_working]:
+{% godbolt_inline compiler_type="gcc", language="c++", execution_args="a b c d e", code=page.code, url_only=true %}
+[gcc_error]:
+{% godbolt_inline compiler_type="gcc", language="c++", execution_args="a b c d e", code=page.code_error, url_only=true %}
+[msvc_working]:
+{% godbolt_inline compiler_type="msvc", language="c++", compiler_args="/Ob1", execution_args="a b c d e", code=page.code, url_only=true %}
+[msvc_error]:
+{% godbolt_inline compiler_type="msvc", language="c++", compiler_args="/Ob1", execution_args="a b c d e", code=page.code_error, url_only=true %}

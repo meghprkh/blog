@@ -9,19 +9,26 @@ categories: C++
 enableTOC: true
 ---
 
-C++20 Concepts are a new language feature that ease generic programming, but are primarily syntactic sugar.
+C++20 Concepts are a new language feature that ease generic programming, but are
+primarily syntactic sugar.
 
-We will try to implement them in C++03, with one caveat - we must _explicitly specify that a class implements an concept_.
+We will try to implement them in C++03, with one caveat - we must _explicitly
+specify that a class implements an concept_.
 
-**NOTE**: We will use template specialization and do not need to be able to modify the class or our concept for this.
+**NOTE**: We will use template specialization and do not need to be able to
+modify the class or our concept for this.
 
-**NOTE**: If it seems like the caveat ignores the entire point of concepts, call these "pseudo-minimal-rust-traits" and read on. By the end of the article, as the Zen of Python mentions, I promise you will agree that explicit is better than implicit :P
+**NOTE**: If it seems like the caveat ignores the entire point of concepts, call
+these "pseudo-minimal-rust-traits" and read on. By the end of the article, as
+the Zen of Python mentions, I promise you will agree that explicit is better
+than implicit :P
 
 ## What are C++ Concepts
 
 C++ Concepts allow us to do compile-time dispatch of methods.
 
-This compile-time dispatch is thus kind of like Rust traits. (Rust traits provide other features too.)
+This compile-time dispatch is thus kind of like Rust traits. (Rust traits
+provide other features too.)
 
 {% godbolt fragment="tut", compiler_args="-std=c++20" %}
 
@@ -76,15 +83,21 @@ int main() {
 
 {% endgodbolt %}
 
-Notice that we never needed to specify that `MyCounter` implements `Counter`. This can easily be fixed by requiring some constant to be defined in `MyCounter` or otherwise.
+Notice that we never needed to specify that `MyCounter` implements `Counter`.
+This can easily be fixed by requiring some constant to be defined in `MyCounter`
+or otherwise.
 
-We call the above **"implicit concepts"**. We will try to implement **"explicit concepts"** - where something must specify that the concept has been implemented for a class.
+We call the above **"implicit concepts"**. We will try to implement **"explicit
+concepts"** - where something must specify that the concept has been implemented
+for a class.
 
 ## C++03 Concepts
 
-We will use C++11 initially. Then will also modify this using some macros for C++03.
+We will use C++11 initially. Then will also modify this using some macros for
+C++03.
 
-We use a templated struct and observe that `static_asserts` inside it are executed when the template is specialized.
+We use a templated struct and observe that `static_asserts` inside it are
+executed when the template is specialized.
 
 {% godbolt fragment="tut", compiler_args="-std=c++11" %}
 
@@ -257,28 +270,38 @@ int main() {
 
 {% endgodbolt %}
 
-We can now use this for defining `print_count` using the same `enable_if` way we used previously. Also most of our macros are simple ones that dont require any parenthesis-escaping except `IMPL_CONCEPT`. Note these macros are completely optional in C++11.
+We can now use this for defining `print_count` using the same `enable_if` way we
+used previously. Also most of our macros are simple ones that dont require any
+parenthesis-escaping except `IMPL_CONCEPT`. Note these macros are completely
+optional in C++11.
 
 <details>
 
 <summary>C++03 details and the macros</summary>
 
-`BOOST_STATIC_ASSERT` can not take reference to a function (and `static_assert` is C++11)
+`BOOST_STATIC_ASSERT` can not take reference to a function (and `static_assert`
+is C++11)
 
 ```
 <source>:67:67: error: '&' cannot appear in a constant-expression
    67 |         BOOST_STATIC_ASSERT(static_cast< int (Self::*)() >(&Self::get_count));
 ```
 
-We get around this by defining the `CONCEPT_ASSERT` macro expands an empty function in C++03, and the `CONCEPT_CHECK_BEGIN` defines the constructor of a `check<Self>` struct. This object is then internal-linkage-constructed by `IMPL_CONCEPT`. This ensures that the compiler tries to specialize the constructor with `Self` and detects that the `static_cast`s failed.
+We get around this by defining the `CONCEPT_ASSERT` macro expands an empty
+function in C++03, and the `CONCEPT_CHECK_BEGIN` defines the constructor of a
+`check<Self>` struct. This object is then internal-linkage-constructed by
+`IMPL_CONCEPT`. This ensures that the compiler tries to specialize the
+constructor with `Self` and detects that the `static_cast`s failed.
 
-Note the `CONCEPT_ASSERT` macro should not be used for "normal"/non-method check asserts as it simply does nothing. Use say `BOOST_STATIC_ASSERT` otherwise.
+Note the `CONCEPT_ASSERT` macro should not be used for "normal"/non-method check
+asserts as it simply does nothing. Use say `BOOST_STATIC_ASSERT` otherwise.
 
 See example preprocessor output [here](https://godbolt.org/z/vn9eKr6G1)
 
 We can check the compile time error because `get_count` is commented out
 
-- [Gcc 4.9](https://godbolt.org/z/TY5ce3G9b) ([GCC 4.1.2](https://godbolt.org/z/oca3efas4))
+- [Gcc 4.9](https://godbolt.org/z/TY5ce3G9b)
+  ([GCC 4.1.2](https://godbolt.org/z/oca3efas4))
 - [Clang 3.4](https://godbolt.org/z/fnndG38cc)
 - [MSVC 19.14 (2017 - new but oldest on godbolt)](https://godbolt.org/z/5xvnErG1v)
 - [ICC 13.0.1 (2012)](https://godbolt.org/z/M1oT6na4v)
@@ -287,7 +310,8 @@ We can check the compile time error because `get_count` is commented out
 
 ## Aside: Explicit concepts in C++20
 
-Explicit concepts can be implemented in pretty much the same way in C++20, using a templated `is_counter` conditional struct
+Explicit concepts can be implemented in pretty much the same way in C++20, using
+a templated `is_counter` conditional struct
 
 {% godbolt fragment="tut", compiler_args="-std=c++20" %}
 
@@ -347,39 +371,61 @@ int main() {
 
 ## Rant on C++20 Concepts
 
-C++20 Concepts thus allow for powerful implicit matching. But, let us take the following example:
+C++20 Concepts thus allow for powerful implicit matching. But, let us take the
+following example:
 
-> Lets say we are building some kind of social media stats app and we have `youtube_api::VideoViewCounter` and `instagram_api::LikeCounter`. Both of them have the `get_count` method.
+> Lets say we are building some kind of social media stats app and we have
+> `youtube_api::VideoViewCounter` and `instagram_api::LikeCounter`. Both of them
+> have the `get_count` method.
 >
-> We want to define a `print_count(counter)` method which takes either of these two classes and does `std::cout << counter.get_count()`.
+> We want to define a `print_count(counter)` method which takes either of these
+> two classes and does `std::cout << counter.get_count()`.
 
-We do not have control over either APIs, but would like a common abstraction. We can:
+We do not have control over either APIs, but would like a common abstraction. We
+can:
 
-1. Declare an "implicit concept" called `Counter` which requires a `get_count` method. Define templated `print_count` for concept
-2. Declare an "explicit concept" with the same. Specify that the above two classes implement this concept without modying the classes. Define templated `print_count` for concept.
+1. Declare an "implicit concept" called `Counter` which requires a `get_count`
+   method. Define templated `print_count` for concept
+2. Declare an "explicit concept" with the same. Specify that the above two
+   classes implement this concept without modying the classes. Define templated
+   `print_count` for concept.
 3. Use an unchecked templated `print_count`
 
 Now consider the following modification to the codebase:
 
-> We add class `my_shared_ptr` which has `get_count` method which returns the reference count of the pointer.
+> We add class `my_shared_ptr` which has `get_count` method which returns the
+> reference count of the pointer.
 >
-> Lets say another engineer started refactoring to store the objects in `shared_ptr` but `print_counter` has not been modified for an explicit overload for `shared_ptr`
+> Lets say another engineer started refactoring to store the objects in
+> `shared_ptr` but `print_counter` has not been modified for an explicit
+> overload for `shared_ptr`
 >
-> What happens when we call `print_count(counter_ptr)` with `counter_ptr = my_shared_ptr<youtube_api::VideoViewCounter>()`?
+> What happens when we call `print_count(counter_ptr)` with
+> `counter_ptr = my_shared_ptr<youtube_api::VideoViewCounter>()`?
 
 Note that:
 
-1. In the case of "implicit concepts", we would see the reference count being printed, without any compile or run-time error.
-2. In the case of "explicit concepts", we would get a compile time error since no method matches this.
-3. In the case of an unchecked template too, we would see the reference count being printed too.
+1. In the case of "implicit concepts", we would see the reference count being
+   printed, without any compile or run-time error.
+2. In the case of "explicit concepts", we would get a compile time error since
+   no method matches this.
+3. In the case of an unchecked template too, we would see the reference count
+   being printed too.
 
-Thus, _implicit concepts are almost as bad as not having any check at all_. Except maybe they can produce neater compiler errors (ignoring the case of overloading based on concepts).
+Thus, _implicit concepts are almost as bad as not having any check at all_.
+Except maybe they can produce neater compiler errors (ignoring the case of
+overloading based on concepts).
 
-Even if you had a 1000 different classes, writing 1000 more lines saying that a concept is implemented by them is better than implicit behaviour in my opinion. In most cases you will either have 1000 template specializations or some script generated code, and in both cases you only need to add one line.
+Even if you had a 1000 different classes, writing 1000 more lines saying that a
+concept is implemented by them is better than implicit behaviour in my opinion.
+In most cases you will either have 1000 template specializations or some script
+generated code, and in both cases you only need to add one line.
 
 > What regex is to parsing, implicit concepts are to C++.
 
-And if explicit concepts are better and already implementable in C++03, why provide an abstraction where most developers will write error-prone code instead of providing syntax sugar for explicit concepts?
+And if explicit concepts are better and already implementable in C++03, why
+provide an abstraction where most developers will write error-prone code instead
+of providing syntax sugar for explicit concepts?
 
 ## Extra syntactic sugar stuff
 
@@ -401,7 +447,8 @@ And if explicit concepts are better and already implementable in C++03, why prov
   USE AS std::enable_if<require_concepts<Cls, Concept1, Concept2>> ...
   ```
 
-- Composing concepts - Using other concept checks in a check (slightly leaky abstraction for C++03)
+- Composing concepts - Using other concept checks in a check (slightly leaky
+  abstraction for C++03)
   ```cpp
   CONCEPT_CHECK_BEGIN
     // Require other_concept to be implemented
@@ -413,8 +460,11 @@ And if explicit concepts are better and already implementable in C++03, why prov
 
 ## Summary
 
-We saw what C++ concepts were and how to write "explicit concepts" in C++03. We also noted that C++20 implicit concepts are error-prone.
+We saw what C++ concepts were and how to write "explicit concepts" in C++03. We
+also noted that C++20 implicit concepts are error-prone.
 
-In the next post I will describe how this compares to Rust traits and how to implement "trait objects" or "concept maps" using the same code.
+In the next post I will describe how this compares to Rust traits and how to
+implement "trait objects" or "concept maps" using the same code.
 
-**NOTE**: For any of the "predefined concepts" like say `copy_constructible`, `type_traits` or similar Boost/utility library can be used.
+**NOTE**: For any of the "predefined concepts" like say `copy_constructible`,
+`type_traits` or similar Boost/utility library can be used.

@@ -6,19 +6,33 @@ tags: [Rust, Leptos, crabtime]
 templateEngineOverride: md
 ---
 
-TLDR: Using [`crabtime`][crabtime] to easily embed icons in [Leptos][leptos] like how you would do it in ReactJS 🦀🦀
+TLDR: Using [`crabtime`][crabtime] to easily embed icons in [Leptos][leptos]
+like how you would do it in ReactJS 🦀🦀
 
-Web development in Rust is exciting. While exploring Leptos, I ran into issues adding icons — but managed to solve them using `crabtime`. This posts shows its Zig-like compile-time power.
+Web development in Rust is exciting. While exploring Leptos, I ran into issues
+adding icons — but managed to solve them using `crabtime`. This posts shows its
+Zig-like compile-time power.
 
 <!-- more -->
 
-Icon fonts like FontAwesome are outdated; embedding SVGs with includes directly is now preferred. Libraries like [Lucide][lucide] use Javascript for this, and Rust ports like [`leptos_lucide`][leptos_lucide] & [`lucide-leptos`][lucide-leptos] offer similar functionality. This gives you tree shaking, only including the icons you need. Other things like `currentColor`, `size`, etc work too. However generating a component per icon, for 2000+ icons, compile times skyrocket.
+Icon fonts like FontAwesome are outdated; embedding SVGs with includes directly
+is now preferred. Libraries like [Lucide][lucide] use Javascript for this, and
+Rust ports like [`leptos_lucide`][leptos_lucide] &
+[`lucide-leptos`][lucide-leptos] offer similar functionality. This gives you
+tree shaking, only including the icons you need. Other things like
+`currentColor`, `size`, etc work too. However generating a component per icon,
+for 2000+ icons, compile times skyrocket.
 
-The idea is to define a macro for defining an "icon component" and then explictly list the icons we may want to use in the project and only pay compile time costs for them.
+The idea is to define a macro for defining an "icon component" and then
+explictly list the icons we may want to use in the project and only pay compile
+time costs for them.
 
 ## The `raw_icon_content!` macro
 
-First lets create a small macro to include and escape the content of a macro. This is very similar to [std::include_str!](https://doc.rust-lang.org/std/macro.include_str.html#examples) but shows basic crabtime usage and assumes paths for our icons.
+First lets create a small macro to include and escape the content of a macro.
+This is very similar to
+[std::include_str!](https://doc.rust-lang.org/std/macro.include_str.html#examples)
+but shows basic crabtime usage and assumes paths for our icons.
 
 ```rust
 #[crabtime::expression]
@@ -49,7 +63,8 @@ view! {
 }
 ```
 
-If we were to `cargo expand` the line `raw_icon_content!("menu")`, it would read something like
+If we were to `cargo expand` the line `raw_icon_content!("menu")`, it would read
+something like
 
 ```rust
 r##"
@@ -58,11 +73,15 @@ r##"
 "##
 ```
 
-(The exact SVG content can be found [here](https://github.com/lucide-icons/lucide/blob/main/icons/menu.svg?short_path=c68f00d))
+(The exact SVG content can be found
+[here](https://github.com/lucide-icons/lucide/blob/main/icons/menu.svg?short_path=c68f00d))
 
 ## The `define_icon_component!` macro
 
-However if we were to include each icon in every component we will have duplicated icon strings (not sure if optimization helps there). It also doesnt give us a nice "component" API. So lets define a `define_icon_component` macro where we see some ``crabtime` power
+However if we were to include each icon in every component we will have
+duplicated icon strings (not sure if optimization helps there). It also doesnt
+give us a nice "component" API. So lets define a `define_icon_component` macro
+where we see some ``crabtime` power
 
 ```rust
 // filename: icons.rs
@@ -85,11 +104,16 @@ pub fn define_icon_component(component_name: String, icon_name: String) {
 define_icon_component!(Menu, "menu");
 ```
 
-This allows us to use the component as `<icons::Menu />` in other components. This is where crabtime really shines, allowing us to write Rust code as string template-y code generation. There are some annoyances about having to re-escape strings, especially since it has to be done out of line, but otherwise it works like magic!
+This allows us to use the component as `<icons::Menu />` in other components.
+This is where crabtime really shines, allowing us to write Rust code as string
+template-y code generation. There are some annoyances about having to re-escape
+strings, especially since it has to be done out of line, but otherwise it works
+like magic!
 
 ## Handling `size` and `stroke_width`
 
-Enhancing the `define_icon_component!` macro with some CSS and props allows us to handle sizing and stroke-width.
+Enhancing the `define_icon_component!` macro with some CSS and props allows us
+to handle sizing and stroke-width.
 
 ```css
 /* file: index.css - or use inline css, or a library like stylers */
@@ -132,17 +156,27 @@ fn Navbar() {
 
 ### Why not `include_view!`?
 
-Leptos comes with a macro to include an external view, but this will try to parse it as the content of a `view!` macro. We want it to be inner html. Specifically HTML comments are a problem - [Github issue](https://github.com/leptos-rs/leptos/issues/3887)
+Leptos comes with a macro to include an external view, but this will try to
+parse it as the content of a `view!` macro. We want it to be inner html.
+Specifically HTML comments are a problem -
+[Github issue](https://github.com/leptos-rs/leptos/issues/3887)
 
 ### Crabtime and errors
 
-I am unsure if `panic`-ing or `crabtime::error` is the way to go. In stable, `error` only logs it in the console, but does not fail the compilation. [Behaviour Reference](https://docs.rs/crabtime/latest/crabtime/#-logging--debugging).
+I am unsure if `panic`-ing or `crabtime::error` is the way to go. In stable,
+`error` only logs it in the console, but does not fail the compilation.
+[Behaviour Reference](https://docs.rs/crabtime/latest/crabtime/#-logging--debugging).
 
 ### Crabtime and string escaping
 
-I am unsure if there is a better way to do this, but string escaping is suggested [here](https://docs.rs/crabtime/latest/crabtime/#-output) under the note "Interpolated variables are inserted as-is, without additional quotes or escape characters."
+I am unsure if there is a better way to do this, but string escaping is
+suggested [here](https://docs.rs/crabtime/latest/crabtime/#-output) under the
+note "Interpolated variables are inserted as-is, without additional quotes or
+escape characters."
 
-It would be nice if crabtime provides an `crabtime::escape_string!` macro that works and can be used inline inside a `crabtime::output!` - [Github Issue](https://github.com/wdanilo/crabtime/issues/37)
+It would be nice if crabtime provides an `crabtime::escape_string!` macro that
+works and can be used inline inside a `crabtime::output!` -
+[Github Issue](https://github.com/wdanilo/crabtime/issues/37)
 
 ```rust
 fn escape_string(in_str: String) -> String {
@@ -167,7 +201,9 @@ let a = r##"A#"b"##;
 
 ## Summary
 
-This was my first time using both Leptos and crabtime. While the initial pain was high, and the macro errors are still hard to debug sometimes, crabtime really makes solving these problems fun imo.
+This was my first time using both Leptos and crabtime. While the initial pain
+was high, and the macro errors are still hard to debug sometimes, crabtime
+really makes solving these problems fun imo.
 
 <details>
 

@@ -5,11 +5,16 @@ tags: [Rust, Traits, Typeclasses]
 enableTOC: true
 ---
 
-Rust's traits have a nifty feature called [Associated Types](https://doc.rust-lang.org/stable/book/ch20-02-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types). Rust's traits can also have [Generic Type Parameters](https://doc.rust-lang.org/stable/book/ch20-02-advanced-traits.html#default-generic-type-parameters-and-operator-overloading).
+Rust's traits have a nifty feature called
+[Associated Types](https://doc.rust-lang.org/stable/book/ch20-02-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types).
+Rust's traits can also have
+[Generic Type Parameters](https://doc.rust-lang.org/stable/book/ch20-02-advanced-traits.html#default-generic-type-parameters-and-operator-overloading).
 
-This post delves into some differences between the two, whether both are needed and my mental model of these concepts.
+This post delves into some differences between the two, whether both are needed
+and my mental model of these concepts.
 
-I am not a Rust pro, and came across this while relearning traits. Please let me know your comments!
+I am not a Rust pro, and came across this while relearning traits. Please let me
+know your comments!
 
 <!-- more -->
 
@@ -17,9 +22,11 @@ I am not a Rust pro, and came across this while relearning traits. Please let me
 
 The Rust book itself asks this question:
 
-> Associated types might seem like a similar concept to generics, in that the latter allow us to define a function without specifying what types it can
-> handle. To examine the difference between the two concepts, we’ll look at an implementation of the Iterator trait on a type named Counter that
-> specifies the Item type is u32:
+> Associated types might seem like a similar concept to generics, in that the
+> latter allow us to define a function without specifying what types it can
+> handle. To examine the difference between the two concepts, we’ll look at an
+> implementation of the Iterator trait on a type named Counter that specifies
+> the Item type is u32:
 >
 > ```rust
 > impl Iterator for Counter {
@@ -28,7 +35,8 @@ The Rust book itself asks this question:
 > }
 > ```
 >
-> This syntax seems comparable to that of generics. So why not just define the Iterator trait with generics, as shown in Listing 20-14?
+> This syntax seems comparable to that of generics. So why not just define the
+> Iterator trait with generics, as shown in Listing 20-14?
 >
 > ```rust
 > pub trait Iterator<T> {
@@ -40,13 +48,21 @@ The Rust book itself asks this question:
 
 It further states that
 
-> The difference is that when using generics, as in Listing 20-14, we must annotate the types in each implementation; because we can also implement Iterator<String> for Counter or any other type, we could have multiple implementations of Iterator for Counter. In other words, when a trait has a generic parameter, it can be implemented for a type multiple times, changing the concrete types of the generic type parameters each time. When we use the next method on Counter, we would have to provide type annotations to indicate which implementation of Iterator we want to use.
+> The difference is that when using generics, as in Listing 20-14, we must
+> annotate the types in each implementation; because we can also implement
+> Iterator<String> for Counter or any other type, we could have multiple
+> implementations of Iterator for Counter. In other words, when a trait has a
+> generic parameter, it can be implemented for a type multiple times, changing
+> the concrete types of the generic type parameters each time. When we use the
+> next method on Counter, we would have to provide type annotations to indicate
+> which implementation of Iterator we want to use.
 >
 > <cite>(From the Rust Book)</cite>
 
 ## Trait inferring - works even for generic traits
 
-Part of the above statement is is not true. The following works without explicit qualification of the trait:
+Part of the above statement is is not true. The following works without explicit
+qualification of the trait:
 
 {% godbolt %}
 
@@ -65,16 +81,21 @@ fn main() {
 
 {% endgodbolt %}
 
-Thus if you have a generic type, and only one implementation of it, Rust is able to do a name-based lookup for it. This is similar to how it does name-based lookup for traits in the first place, i.e. on noticing `v.first_element()`, it:
+Thus if you have a generic type, and only one implementation of it, Rust is able
+to do a name-based lookup for it. This is similar to how it does name-based
+lookup for traits in the first place, i.e. on noticing `v.first_element()`, it:
 
-1. Analyzes the type of the object the method is being called on, i.e. `v` -> `Vec<i64>`
+1. Analyzes the type of the object the method is being called on, i.e. `v` ->
+   `Vec<i64>`
 2. List traits implemented for it, i.e. `Index, MyTrait` and so on
 3. See if any of them have the matching method call, i.e. `first_element()`
 4. If there are multiple matches, error out with an ambiguous match error
 
 ## Uniqueness constraint
 
-However, with associated types, the useful contract that a trait can only be implemented once for a type remains. I.e, the following is possible with generic traits but not with associated types.
+However, with associated types, the useful contract that a trait can only be
+implemented once for a type remains. I.e, the following is possible with generic
+traits but not with associated types.
 
 {% godbolt fragment="double_impl" %}
 
@@ -105,7 +126,8 @@ So, are there other differences?
 
 ## More differences - returning trait objects
 
-Let's assume we want to define `vec_iter` which wraps `vec.iter()` such that we can
+Let's assume we want to define `vec_iter` which wraps `vec.iter()` such that we
+can
 
 ```rust
 fn main() {
@@ -116,7 +138,8 @@ fn main() {
 }
 ```
 
-In the case of associated types, we can specify the trait without specifying the associated type.
+In the case of associated types, we can specify the trait without specifying the
+associated type.
 
 {% godbolt fragment="return_iterator" %}
 
@@ -136,7 +159,8 @@ let _ = vec_iter(v);
 
 {% endgodbolt %}
 
-This itself is not very useful in most cases, as using it would have caused an error
+This itself is not very useful in most cases, as using it would have caused an
+error
 
 {% godbolt fragment="return_iterator" %}
 
@@ -204,11 +228,13 @@ fn main() {}
 
 {% endgodbolt %}
 
-Thus even in the above case, specifying the associated type is necessary in most cases.
+Thus even in the above case, specifying the associated type is necessary in most
+cases.
 
 ## More differences - multiple associated types
 
-In the case of atrait having multiple associated types, it is valid to associate only one of them and use it.
+In the case of atrait having multiple associated types, it is valid to associate
+only one of them and use it.
 
 {% godbolt fragment="return_half_impl"  %}
 
@@ -246,13 +272,18 @@ fn main() {
 
 {% endgodbolt %}
 
-This does not seem as useful as traits are intended to be "small / composable", so if you have multiple associated types, you are likely using all of them or none of them.
+This does not seem as useful as traits are intended to be "small / composable",
+so if you have multiple associated types, you are likely using all of them or
+none of them.
 
 ## My mental model
 
-- I believe that there is only one real difference between them is the single implementation of a trait constraint.
-- For usage, you should treat them as generic traits everywhere. Always specify the associated types. Thus this difference only affects trait implementors.
-- According to me, a slightly more intuitive syntax would be something that consistently enforces associated type specification in usage.
+- I believe that there is only one real difference between them is the single
+  implementation of a trait constraint.
+- For usage, you should treat them as generic traits everywhere. Always specify
+  the associated types. Thus this difference only affects trait implementors.
+- According to me, a slightly more intuitive syntax would be something that
+  consistently enforces associated type specification in usage.
 
 <details>
 
@@ -280,6 +311,8 @@ trait NDShape<BaseUnit, PerimeterUnit, AreaUnit> {
 
 (I admit its not great though)
 
-Aside: In nightly, there is `#![feature(associated_type_defaults)]` which affects trait implementors, not users, by providing defaults for associated types.
+Aside: In nightly, there is `#![feature(associated_type_defaults)]` which
+affects trait implementors, not users, by providing defaults for associated
+types.
 
 </details>
