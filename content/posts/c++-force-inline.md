@@ -124,9 +124,13 @@ GCC summarizes this as "An Inline Function is As Fast As a Macro" [^5]. Zig prov
 Thus we can and should build syntactic sugar as functions instead of weird macros. Without any worries of performance.
 
 [^1]: https://clang.llvm.org/docs/AttributeReference.html#always-inline-force-inline
+
 [^2]: https://docs.microsoft.com/en-us/cpp/cpp/inline-functions-cpp
+
 [^3]: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#always_inline
+
 [^4]: https://clang.llvm.org/docs/AttributeReference.html#gnu-inline
+
 [^5]: https://gcc.gnu.org/onlinedocs/gcc/Inline.html
 
 [clang_working]: {% godbolt_inline compiler_type="clang", language="c++", execution_args="a b c d e", code=page.code, url_only=true %}

@@ -3,6 +3,9 @@ import process from "node:process";
 import { DateTime } from "luxon";
 import markdownItAnchor from "markdown-it-anchor";
 import markdownItFootnote from "markdown-it-footnote";
+import markdownItMathTemml from "markdown-it-math/temml";
+import temml from "temml";
+import mathup from "mathup";
 import { load } from "js-yaml";
 
 import pluginRss from "@11ty/eleventy-plugin-rss";
@@ -112,6 +115,25 @@ export default function (eleventyConfig) {
 			slugify: eleventyConfig.getFilter("slugify"),
 		});
 		mdLib.use(markdownItFootnote);
+		mdLib.use(markdownItMathTemml, {
+			inlineDelimiters: ["$", ["\\(", "\\)"]],
+			inlineRenderer(src, token) {
+				if (token.markup === "$") {
+					return mathup(src).toString();
+				}
+
+				return temml.renderToString(src);
+			},
+
+			blockDelimiters: ["$$", ["\\[", "\\]"]],
+			blockRenderer(src, token) {
+				if (token.markup === "$$") {
+					return mathup(src, { display: "block" }).toString();
+				}
+
+				return temml.renderToString(src, { displayMode: true });
+			},
+		});
 	});
 
 	eleventyConfig.addShortcode("currentBuildDate", () => {
